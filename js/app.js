@@ -13,7 +13,7 @@
     var role = S.role;
     var view = S.view;
 
-    // Login screen renderer (role not set)
+    // Login screen renderer (role not set or view is login)
     if (!role || view === 'login') {
       appContainer.innerHTML = window.AstronautViews.login();
       return;
@@ -57,11 +57,11 @@
     appContainer.innerHTML = window.renderShell(contentHtml);
 
     // Initialize 3D Viewers after DOM update
-    setTimeout(initViewers, 50);
+    setTimeout(initViewers, 60);
   };
 
   function initViewers() {
-    if (!window.ThreeViewerManager) return;
+    if (!window.ThreeViewerManager || !window.THREE) return;
 
     var view = S.view;
 
@@ -121,7 +121,11 @@
   }
 
   // Initial render when DOM is ready
-  document.addEventListener('DOMContentLoaded', function() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      window.render();
+    });
+  } else {
     window.render();
-  });
+  }
 })();

@@ -232,7 +232,7 @@
                               '<div class="tile-label">' + v.name + '</div>' +
                               '<div class="value" style="margin-top:4px;">' + v.val + ' <span class="unit">' + v.unit + '</span></div>' +
                             '</div>' +
-                            window.pill(v.status, v.status.toUpperCase()) +
+                            window.pill(v.status || 'stable', (v.status || 'stable').toUpperCase()) +
                           '</div>' +
                           '<div style="margin-top:14px; background:#F8FAFC; border-radius:8px; padding:8px 4px 0 4px;">' +
                             window.sparkline(v.history, v.color, 240, 50, true) +

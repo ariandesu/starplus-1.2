@@ -23,29 +23,32 @@
     // Clear previous contents if any
     container.innerHTML = '';
 
-    var width = container.clientWidth || opts.width || (opts.mini ? 80 : 300);
-    var height = container.clientHeight || opts.height || (opts.mini ? 80 : 300);
+    var width = container.clientWidth || opts.width || (opts.mini ? 80 : 320);
+    var height = container.clientHeight || opts.height || (opts.mini ? 80 : 320);
 
     var scene = new THREE.Scene();
     
     var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, opts.mini ? 3.2 : 3.8);
+    var camPos = opts.cameraPos || [0, 0, opts.mini ? 3.2 : 3.8];
+    camera.position.set(camPos[0], camPos[1], camPos[2]);
 
     var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    if (renderer.outputColorSpace) {
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+    }
     container.appendChild(renderer.domElement);
 
-    // Lighting
-    var ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    // Lighting Setup
+    var ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
     scene.add(ambientLight);
 
-    var dirLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
+    var dirLight1 = new THREE.DirectionalLight(0xffffff, 1.6);
     dirLight1.position.set(5, 10, 7);
     scene.add(dirLight1);
 
-    var dirLight2 = new THREE.DirectionalLight(0xa5c9ff, 0.8);
+    var dirLight2 = new THREE.DirectionalLight(0x93c5fd, 0.9);
     dirLight2.position.set(-5, -5, -5);
     scene.add(dirLight2);
 
@@ -65,7 +68,7 @@
     var animFrameId = null;
     var isDisposed = false;
 
-    // Load model
+    // Load Textured GLTF / GLB Model
     if (window.THREE && THREE.GLTFLoader) {
       var loader = new THREE.GLTFLoader();
       loader.load(
@@ -74,19 +77,19 @@
           if (isDisposed) return;
           var model = gltf.scene;
 
-          // Enable shadows/materials
+          // Retain original textures and materials
           model.traverse(function(node) {
             if (node.isMesh) {
               node.castShadow = true;
               node.receiveShadow = true;
-              if (opts.colorOverlay) {
+              if (opts.colorOverlay && node.material) {
                 node.material = node.material.clone();
                 node.material.color.setHex(opts.colorOverlay);
               }
             }
           });
 
-          // Center and scale model
+          // Center and scale model to fit viewport bounding box
           var box = new THREE.Box3().setFromObject(model);
           var center = box.getCenter(new THREE.Vector3());
           var size = box.getSize(new THREE.Vector3());
@@ -104,17 +107,22 @@
         },
         undefined,
         function(err) {
-          console.warn('GLTF load error for ' + modelPath + ':', err);
-          // Fallback visual shape if GLB fails
-          var geom = opts.mini ? new THREE.SphereGeometry(0.8, 16, 16) : new THREE.TorusKnotGeometry(0.8, 0.3, 64, 16);
-          var mat = new THREE.MeshStandardMaterial({ color: opts.colorOverlay || 0x1769E8, roughness: 0.3, metalness: 0.2 });
+          console.warn('GLTF load fallback for ' + modelPath + ':', err);
+          // Visual holographic fallback shape if GLB fails to fetch
+          var geom = opts.mini ? new THREE.SphereGeometry(0.8, 16, 16) : new THREE.TorusKnotGeometry(0.8, 0.28, 64, 16);
+          var mat = new THREE.MeshStandardMaterial({
+            color: opts.colorOverlay || 0x1769E8,
+            roughness: 0.3,
+            metalness: 0.2,
+            wireframe: false
+          });
           var mesh = new THREE.Mesh(geom, mat);
           modelPivot.add(mesh);
         }
       );
     }
 
-    // Animation Loop
+    // Render Animation Loop
     function animate() {
       if (isDisposed) return;
       animFrameId = requestAnimationFrame(animate);
@@ -150,5 +158,11 @@
 
     window.activeViewers.push(viewerInstance);
     return viewerInstance;
+  };
+
+  // Manager namespace for backwards compatibility & lifecycle calls
+  window.ThreeViewerManager = {
+    create: window.createViewer,
+    disposeAll: window.disposeAllViewers
   };
 })();
