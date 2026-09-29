@@ -268,16 +268,32 @@
       controls: controls,
       dispose: function() {
         isDisposed = true;
-        if (animFrameId) cancelAnimationFrame(animFrameId);
-        if (resizeObserver) resizeObserver.disconnect();
-        if (controls) controls.dispose();
-        if (renderer && renderer.domElement && renderer.domElement.parentNode) {
-          renderer.domElement.parentNode.removeChild(renderer.domElement);
+        if (animFrameId) {
+          cancelAnimationFrame(animFrameId);
+          animFrameId = null;
+        }
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+          resizeObserver = null;
+        }
+        if (controls) {
+          controls.dispose();
+          controls = null;
+        }
+        if (renderer) {
+          if (renderer.domElement && renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+          }
+          if (renderer.forceContextLoss) {
+            renderer.forceContextLoss();
+          }
+          renderer.dispose();
+          renderer = null;
         }
         if (toolbarEl && toolbarEl.parentNode) {
           toolbarEl.parentNode.removeChild(toolbarEl);
+          toolbarEl = null;
         }
-        if (renderer) renderer.dispose();
       }
     };
 
