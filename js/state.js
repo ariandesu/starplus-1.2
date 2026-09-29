@@ -73,6 +73,14 @@
       this.notify();
     },
 
+    openSys: function(id) {
+      this.set({ view: 'system-detail', sys: id });
+    },
+
+    openCrew: function(id) {
+      this.set({ view: 'crew-detail', crewId: id });
+    },
+
     // Assessment Wizard Flow
     stepNext: function() {
       this.step = Math.min(3, (this.step || 0) + 1);
