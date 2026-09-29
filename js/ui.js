@@ -1,11 +1,81 @@
-// js/ui.js
-function pill(st,label){var hx=HEX[st]||HEX.Stable;return '<span class="pill" style="color:'+hx+';background:'+hx+'1a"><i style="background:'+hx+'"></i>'+(label||st)+'</span>'}
-function itile(iconName,color,size){size=size||40;return '<span class="icontile" style="background:'+color+'1a;color:'+color+';width:'+size+'px;height:'+size+'px">'+icon(iconName,size*.45)+'</span>'}
-function bar(pct,color){return '<div class="bar"><div style="width:'+pct+'%;background:'+(color||'#1769E8')+'"></div></div>'}
-function head(title,sub,right){return '<div class="head"><div><h2>'+title+'</h2>'+(sub?'<p>'+sub+'</p>':'')+'</div>'+(right||'')+'</div>'}
-function tabsHTML(key,items){var cur=t(key,typeof items[0]==='string'?items[0]:items[0][0]);var h='<div class="tabs">';items.forEach(function(it){var id=typeof it==='string'?it:it[0],lb=typeof it==='string'?it:it[1];h+='<button class="tab'+(cur===id?' on':'')+'" onclick="setTab(\''+key+'\',\''+id+'\')">'+lb+'</button>'});return h+'</div>'}
-function statTile(label,value,unit,color,data){return '<div class="card" style="padding:16px"><div class="tile-label">'+label+'</div><div style="margin-top:4px;display:flex;align-items:baseline;gap:4px"><span class="value">'+value+'</span>'+(unit?'<span class="unit">'+unit+'</span>':'')+'</div>'+(data?'<div style="margin-top:8px">'+sparkSVG(data,color)+'</div>':'')+'</div>'}
-function bodyMap(){var dots=[[60,26,'#7657E8'],[52,76,'#1769E8'],[68,76,'#1769E8'],[60,94,'#E94B5F'],[60,128,'#F5A623'],[60,168,'#16B978']];var d='';dots.forEach(function(p){d+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="'+p[2]+'" class="pulse"/>'});return '<svg viewBox="0 0 120 240" style="height:220px"><circle cx="60" cy="26" r="16" fill="#CFE3FB"/><path d="M60 46c-18 0-28 10-30 26l-5 44c-1 7 9 9 11 2l7-30v128c0 9 13 9 13 0v-84h8v84c0 9 13 9 13 0V88l7 30c2 7 12 5 11-2l-5-44c-2-16-12-26-30-26z" fill="#CFE3FB"/>'+d+'</svg>'}
-function heartArt(){return '<svg viewBox="0 0 200 200" style="width:150px"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ef4444"/><stop offset="1" stop-color="#991b1b"/></linearGradient></defs><rect x="86" y="16" width="16" height="36" rx="8" fill="#b91c1c"/><rect x="108" y="20" width="14" height="32" rx="7" fill="#3b82f6" opacity=".75"/><path d="M100 55 C 60 45 40 80 52 112 C 62 140 84 160 100 172 C 116 160 138 140 148 112 C 160 80 140 45 100 55 Z" fill="url(#hg)"/><ellipse cx="82" cy="92" rx="14" ry="22" fill="#ffffff" opacity=".18"/><path d="M100 60c-6 22-6 60 0 100" stroke="#7f1d1d" stroke-width="3" fill="none" opacity=".5"/></svg>'}
-function astronautArt(){return '<svg class="astronaut-art" viewBox="0 0 340 560"><defs><linearGradient id="suit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#cbd5e1"/></linearGradient><linearGradient id="visor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset=".5" stop-color="#0c4a6e"/><stop offset="1" stop-color="#020617"/></linearGradient></defs><rect x="112" y="150" width="116" height="150" rx="24" fill="#94a3b8"/><circle cx="170" cy="110" r="66" fill="url(#suit)"/><circle cx="170" cy="112" r="48" fill="url(#visor)"/><ellipse cx="152" cy="96" rx="14" ry="8" fill="#7dd3fc" opacity=".55" transform="rotate(-20 152 96)"/><rect x="112" y="168" width="116" height="150" rx="44" fill="url(#suit)"/><rect x="142" y="196" width="56" height="42" rx="8" fill="#12213f"/><circle cx="156" cy="210" r="4" fill="#16b978"/><circle cx="172" cy="210" r="4" fill="#f5a623"/><rect x="156" y="222" width="30" height="6" rx="3" fill="#38bdf8"/><rect x="66" y="182" width="42" height="120" rx="21" fill="url(#suit)" transform="rotate(16 87 242)"/><rect x="232" y="182" width="42" height="120" rx="21" fill="url(#suit)" transform="rotate(-16 253 242)"/><circle cx="62" cy="308" r="17" fill="#cbd5e1"/><circle cx="278" cy="308" r="17" fill="#cbd5e1"/><rect x="120" y="316" width="44" height="160" rx="22" fill="url(#suit)"/><rect x="176" y="316" width="44" height="160" rx="22" fill="url(#suit)"/><rect x="116" y="470" width="52" height="26" rx="10" fill="#94a3b8"/><rect x="172" y="470" width="52" height="26" rx="10" fill="#94a3b8"/></svg>'}
-function initialsOf(name){return name.split(/[\s.]+/).filter(Boolean).map(function(p){return p[0]}).join('').slice(0,2).toUpperCase()}
+// js/ui.js — UI Primitive Generators for STAR PLUS 1.2
+
+(function() {
+  window.pill = function(status, text) {
+    status = (status || 'stable').toLowerCase();
+    var cls = 'pill-stable';
+    var defaultText = 'Stable';
+
+    if (status === 'attention') { cls = 'pill-attention'; defaultText = 'Attention'; }
+    else if (status === 'monitoring') { cls = 'pill-monitoring'; defaultText = 'Monitoring'; }
+    else if (status === 'critical') { cls = 'pill-critical'; defaultText = 'Critical'; }
+
+    return '<span class="pill ' + cls + '"><i></i>' + (text || defaultText) + '</span>';
+  };
+
+  window.statCard = function(label, value, unit, iconName, iconBg, iconColor) {
+    iconBg = iconBg || '#EAF3FF';
+    iconColor = iconColor || '#1769E8';
+    return '<div class="stat-pill-card">' +
+             '<div class="stat-pill-icon" style="background:' + iconBg + '; color:' + iconColor + ';">' +
+               window.icon(iconName || 'overview', 22) +
+             '</div>' +
+             '<div>' +
+               '<div class="tile-label">' + label + '</div>' +
+               '<div class="value" style="font-size:20px;">' + value + (unit ? '<span class="unit">' + unit + '</span>' : '') + '</div>' +
+             '</div>' +
+           '</div>';
+  };
+
+  window.meterBar = function(value, max, colorHex) {
+    var pct = Math.min(100, Math.max(0, (value / max) * 100));
+    colorHex = colorHex || '#1769E8';
+    return '<div class="bar"><div style="width:' + pct + '%; background:' + colorHex + ';"></div></div>';
+  };
+
+  window.alertRow = function(alert) {
+    var pillHtml = window.pill(alert.status, alert.status.toUpperCase());
+    return '<div class="card" style="padding:16px 20px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:16px;">' +
+             '<div style="display:flex; align-items:flex-start; gap:14px;">' +
+               '<div style="width:36px; height:36px; border-radius:10px; background:#FEF6E9; color:#F5A623; display:grid; place-items:center; flex-shrink:0;">' +
+                 window.icon('alerts', 18) +
+               '</div>' +
+               '<div>' +
+                 '<div style="display:flex; align-items:center; gap:10px;">' +
+                   '<span style="font-weight:700; font-size:14px; color:#0F172A;">' + alert.title + '</span>' +
+                   pillHtml +
+                   '<span style="font-size:11px; color:#94A3B8;">' + (alert.time || 'Just now') + '</span>' +
+                 '</div>' +
+                 '<div style="font-size:12px; color:#64748B; margin-top:4px;">' + alert.desc + '</div>' +
+               '</div>' +
+             '</div>' +
+             '<div style="display:flex; gap:8px;">' +
+               '<button class="btn btn-p" onclick="S.set({view:\'systems\', sys:\'cardiovascular\'})">Take Action</button>' +
+               '<button class="btn" onclick="this.closest(\'.card\').remove()">Dismiss</button>' +
+             '</div>' +
+           '</div>';
+  };
+
+  window.crewCard = function(crewMember, isActive) {
+    var pillHtml = window.pill(crewMember.status, crewMember.status.toUpperCase());
+    return '<div class="card hover" onclick="S.set({crewId:\'' + crewMember.id + '\', view:\'crew-detail\'})" style="border-color:' + (isActive ? '#1769E8' : 'var(--border)') + ';">' +
+             '<div style="display:flex; align-items:center; gap:14px;">' +
+               '<div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #0B192C, #1769E8); color:#FFF; display:grid; place-items:center; font-weight:800; font-size:16px;">' +
+                 crewMember.name.split(' ').map(function(n){return n[0];}).join('') +
+               '</div>' +
+               '<div style="flex:1;">' +
+                 '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                   '<span style="font-weight:700; font-size:15px;">' + crewMember.name + '</span>' +
+                   pillHtml +
+                 '</div>' +
+                 '<div style="font-size:12px; color:#64748B; margin-top:2px;">' + crewMember.role + ' • ' + crewMember.id + '</div>' +
+               '</div>' +
+             '</div>' +
+             '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:16px; pt:12px; border-top:1px solid #E2E8F0; text-align:center;">' +
+               '<div><div class="tile-label">HR</div><div style="font-size:14px; font-weight:700;">' + crewMember.hr + '</div></div>' +
+               '<div><div class="tile-label">BP</div><div style="font-size:14px; font-weight:700;">' + crewMember.bp + '</div></div>' +
+               '<div><div class="tile-label">SpO₂</div><div style="font-size:14px; font-weight:700;">' + crewMember.spo2 + '</div></div>' +
+             '</div>' +
+           '</div>';
+  };
+})();

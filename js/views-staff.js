@@ -1,30 +1,152 @@
-// js/views-staff.js  (screens 13–15)
-function vMedicalOverview(){
- var cards='';CREW.forEach(function(c){cards+='<button class="card hover" style="padding:16px;text-align:left" onclick="openCrew(\''+c.id+'\')"><div style="display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;border-radius:50%;background:var(--soft);color:var(--blue);display:grid;place-items:center;font-size:12px;font-weight:800">'+initialsOf(c.name)+'</span><div><div style="font-size:12px;font-weight:700">'+c.name+'</div><div class="muted">'+c.role+'</div></div></div><div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">'+pill(c.status)+'<span class="muted">'+c.adh+'</span></div></button>'});
- var rows='';CREW.forEach(function(c){var dots='';CREW_TL[c.id].forEach(function(st,i){dots+='<span class="tl-dot" title="'+c.name+' · '+DAYS[i]+' · '+st+'" style="background:'+HEX[st]+'"></span>'});rows+='<div class="tl-row"><div class="tl-name">'+c.name+'</div><div class="tl-dots">'+dots+'</div></div>'});
- var leg='';['Stable','Monitoring','Attention','Critical'].forEach(function(s){leg+='<span style="display:inline-flex;gap:6px;align-items:center;font-size:10px;color:var(--slate)"><span class="tl-dot" style="width:8px;height:8px;background:'+HEX[s]+'"></span>'+s+'</span>'});
- return head('Crew Health Overview','Real-time health status of all crew members.','<span class="pill" style="color:var(--green);background:#16b9781a">4 / 4 Operational</span>')+
- '<div class="sys-grid">'+cards+'</div><div class="card" style="padding:20px;margin-top:16px"><div class="tile-label" style="margin-bottom:16px">Crew Health Timeline (Last 7 Days)</div>'+rows+'<div class="tl-row"><div class="tl-name"></div><div class="tl-dots">'+DAYS.map(function(d){return '<span style="font-size:10px;color:var(--slate)">'+d.replace('Oct ','')+'</span>'}).join('')+'</div></div><div style="display:flex;gap:16px;margin-top:8px">'+leg+'</div></div>';
-}
-function vCrewDetail(){
- var c=CREW.find(function(x){return x.id===S.crewId})||CREW[1];
- var tab=t('crew-tab','Overview'),body='';
- if(tab==='Overview')body='<div class="two"><div class="card" style="padding:20px"><div class="tile-label" style="margin-bottom:8px">Health Timeline — Resting HR</div>'+trendSVG(c.series,DAYS,HEX[c.status],' bpm')+'</div><div class="card" style="padding:20px"><div class="tile-label" style="margin-bottom:12px">Recent Events</div><div class="grid" style="gap:8px">'+EVENTS.map(function(e){return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px"><span style="color:var(--slate)"><b style="color:var(--navy)">'+e[0]+'</b> · '+e[1]+'</span>'+pill(e[2])+'</div>'}).join('')+'</div></div></div>';
- else body='<div class="card" style="padding:24px;font-size:12px;color:var(--slate)">The '+tab.toLowerCase()+' module mirrors the astronaut-facing views with clinical annotations and note-taking (demo placeholder).</div>';
- var modal=S.why?'<div class="modal" onclick="setWhy(false)"><div class="card" style="padding:20px" onclick="event.stopPropagation()"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:700">Why was '+c.name+' flagged?</div><button class="iconbtn" onclick="setWhy(false)">'+icon('x',15)+'</button></div><p class="muted" style="margin-top:4px">Multi-biomarker WATCH signal — 72-hour window vs 30-day personal baseline:</p><div class="grid" style="gap:8px;margin-top:12px">'+WATCH.map(function(w){return '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px"><div><div style="font-weight:600">'+w[0]+'</div><div style="font-size:10px;color:var(--slate)">'+w[2]+'</div></div><span style="font-weight:700;color:'+(w[3]==='elevated'?'var(--red)':'var(--amber)')+'">'+w[1]+'</span></div>'}).join('')+'</div><button class="btn btn-p" style="width:100%;margin-top:16px" onclick="setWhy(false)">Acknowledge</button></div></div>':'';
- return '<button class="btn" style="margin-bottom:12px" onclick="go(\'overview\')">← Back to crew overview</button>'+
- '<div class="card" style="padding:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px"><div style="display:flex;gap:16px;align-items:center"><span style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;display:grid;place-items:center;font-weight:800">'+initialsOf(c.name)+'</span><div><div style="font-size:13px;font-weight:700">'+c.full+'</div><div class="muted">'+c.role+' · ID '+c.sid+'</div></div></div><div style="display:flex;gap:8px;align-items:center">'+(c.status!=='Stable'?'<button class="btn" style="border-color:#f5a62366;color:var(--amber);background:#f5a6231a" onclick="setWhy(true)">Why was this flagged?</button>':'')+pill(c.status)+'</div></div>'+
- '<div style="margin-bottom:16px">'+tabsHTML('crew-tab',['Overview','Vitals','Systems','Assessments','Notes'])+'</div>'+body+modal;
-}
-function envCard(toggles){
- var rows='';ENV.forEach(function(e){var el=!!S.anom[e[0]];rows+='<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:12px;padding:10px 12px"><span style="display:inline-flex;gap:8px;align-items:center;font-size:12px;font-weight:600"><span style="color:'+(el?'var(--amber)':'var(--green)')+'">'+icon(e[2],14)+'</span>'+e[1]+'</span><span style="display:flex;gap:8px;align-items:center">'+pill(el?'Attention':'Stable',el?'Elevated':'Normal')+(toggles?'<button class="btn" onclick="toggleAnom(\''+e[0]+'\')">'+(el?'Reset':'Simulate')+'</button>':'')+'</span></div>'});
- return '<div class="card" style="padding:20px"><div class="tile-label" style="margin-bottom:12px">Environment (ECLSS)</div><div class="grid" style="gap:8px">'+rows+'</div>'+(toggles?'<p class="muted" style="margin-top:12px">Anomaly simulation: toggling injects a synthetic cabin deviation so crew-side alerts and medical triage can be exercised end-to-end.</p>':'')+'</div>';
-}
-function vControl(tab){
- if(tab==='reports')return head('Reports','Auto-generated operational summaries.')+'<div class="card" style="padding:8px 20px">'+['Daily Crew Health Summary — Sol 07','ECLSS Performance Report — Week 26','Radiation Exposure Audit — Month 6'].map(function(r){return '<div class="rowline"><span>'+r+'</span><button class="btn">Download</button></div>'}).join('')+'</div>';
- if(tab==='environment')return head('Environment','Cabin atmosphere & ECLSS telemetry.','<span class="pill" style="color:var(--blue);background:#1769e81a">Live telemetry</span>')+'<div style="max-width:560px">'+envCard(true)+'</div>';
- return '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">'+
- '<div class="card" style="padding:20px"><div class="tile-label" style="margin-bottom:12px">Mission Overview</div><div class="grid" style="gap:12px;font-size:12px"><div style="display:flex;justify-content:space-between"><span style="color:var(--slate)">Crew Status</span><b style="color:var(--green)">4 / 4 Operational</b></div><div style="display:flex;justify-content:space-between"><span style="color:var(--slate)">Health Events</span><span style="font-weight:600">No mission-critical events</span></div><div style="display:flex;justify-content:space-between"><span style="color:var(--slate)">Comm Delay</span><b>'+MISSION.delay+'</b></div><div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--slate)">Mission Health</span><b style="color:var(--blue)">88%</b></div>'+bar(88)+'</div></div></div>'+
- '<div class="card"><div class="mission-hero"><div class="mars-sphere"></div><div style="font-size:10px;letter-spacing:.14em;color:#ffffff99;text-transform:uppercase">Mission</div><div style="margin-top:4px;font-size:18px;font-weight:800">'+MISSION.name+'</div><div style="font-size:12px;color:#ffffffb3">Day '+MISSION.day+' of '+MISSION.total+'</div></div><div style="padding:20px" class="grid"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--slate)">Distance from Earth</span><b>'+MISSION.distance+'</b></div><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--slate)">Phase</span><b>'+MISSION.phase+'</b></div></div></div>'+
- envCard(false)+'</div>';
-}
+// js/views-staff.js — Medical Officer & Mission Control Views for STAR PLUS 1.2
+
+(function() {
+  window.StaffViews = {
+
+    // Screen 13: Medical Officer — Crew Overview
+    staffOverview: function() {
+      return '<div class="head">' +
+               '<div>' +
+                 '<div style="display:flex; align-items:center; gap:12px;">' +
+                   '<h2>Crew Health Overview</h2>' +
+                   window.pill('stable', '4 / 4 OPERATIONAL') +
+                 '</div>' +
+                 '<p style="margin-top:4px;">Medical Officer Diagnostic Console • Real-time Crew Monitoring</p>' +
+               '</div>' +
+             '</div>' +
+
+             '<!-- 4 Crew Cards Grid -->' +
+             '<div class="sys-grid" style="margin-bottom:24px;">' +
+               CREW.map(function(c) {
+                 var isActive = S.crewId === c.id;
+                 return window.crewCard(c, isActive);
+               }).join('') +
+             '</div>' +
+
+             '<!-- 7-Day Health Timeline -->' +
+             '<div class="card">' +
+               '<div style="font-size:16px; font-weight:700; margin-bottom:16px;">Crew Status Timeline (Past 7 Days)</div>' +
+               CREW_TL.map(function(ctl) {
+                 return '<div class="tl-row">' +
+                          '<div class="tl-name">' + ctl.name + '</div>' +
+                          '<div class="tl-dots">' +
+                            ctl.dots.map(function(dotColor) {
+                              return '<span class="tl-dot" style="background:' + dotColor + ';"></span>';
+                            }).join('') +
+                          '</div>' +
+                        '</div>';
+               }).join('') +
+             '</div>';
+    },
+
+    // Screen 14: Medical Officer — Crew Detail (J. Kim)
+    crewDetail: function() {
+      var crewId = S.crewId || 'AST-002';
+      var c = CREW.find(function(item) { return item.id === crewId; }) || CREW[1];
+
+      return '<div class="head">' +
+               '<div>' +
+                 '<div style="display:flex; align-items:center; gap:12px;">' +
+                   '<button class="btn" onclick="S.set({view:\'staff-overview\'})">&larr; Back to Crew</button>' +
+                   '<h2>' + c.name + ' Telemetry</h2>' +
+                   window.pill(c.status, c.status.toUpperCase()) +
+                 '</div>' +
+                 '<p style="margin-top:4px;">' + c.role + ' • ID: ' + c.id + '</p>' +
+               '</div>' +
+             '</div>' +
+
+             '<div class="two">' +
+               '<!-- Multi-line Vital Chart -->' +
+               '<div class="card">' +
+                 '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">7-Day Multi-Metric Telemetry Chart</div>' +
+                 window.multiLineChart([
+                   { color: '#E94B5F', data: [72, 74, 78, 80, 76, 75, 74] },
+                   { color: '#1769E8', data: [118, 120, 124, 122, 119, 118, 117] },
+                   { color: '#16B978', data: [98, 98, 97, 98, 98, 99, 98] }
+                 ], DAYS, 480, 200) +
+                 '<div style="display:flex; justify-content:center; gap:20px; margin-top:14px; font-size:12px; font-weight:600;">' +
+                   '<span style="color:#E94B5F;">● Heart Rate (bpm)</span>' +
+                   '<span style="color:#1769E8;">● Systolic BP (mmHg)</span>' +
+                   '<span style="color:#16B978;">● SpO₂ (%)</span>' +
+                 '</div>' +
+               '</div>' +
+
+               '<!-- Recent Events List -->' +
+               '<div class="card">' +
+                 '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Clinical Events &amp; Observations</div>' +
+                 EVENTS.map(function(ev) {
+                   return '<div class="rowline">' +
+                            '<div>' +
+                              '<div style="font-weight:700;">' + ev.title + '</div>' +
+                              '<div style="font-size:11px; color:#94A3B8;">' + ev.time + ' • ' + ev.desc + '</div>' +
+                            '</div>' +
+                            window.pill(ev.status, ev.status.toUpperCase()) +
+                          '</div>';
+                 }).join('') +
+               '</div>' +
+             '</div>';
+    },
+
+    // Screen 15: Mission Control Overview
+    controlOverview: function() {
+      return '<div class="head">' +
+               '<div>' +
+                 '<h2>Mission Control Global Dashboard</h2>' +
+                 '<p>Spacecraft Systems, Life Support &amp; Environmental Telemetry</p>' +
+               '</div>' +
+             '</div>' +
+
+             '<div class="ov-grid">' +
+               '<div style="display:flex; flex-direction:column; gap:20px;">' +
+                 '<!-- Overall Health -->' +
+                 '<div class="card">' +
+                   '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
+                     '<span style="font-size:16px; font-weight:700;">Overall Fleet Health Index</span>' +
+                     '<span style="font-size:24px; font-weight:900; color:#1769E8;">88%</span>' +
+                   '</div>' +
+                   window.meterBar(88, 100, '#1769E8') +
+                 '</div>' +
+
+                 '<!-- Environment metrics -->' +
+                 '<div class="card">' +
+                   '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Hab Environmental Parameters</div>' +
+                   '<div class="four">' +
+                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
+                       '<div class="tile-label">Radiation Rate</div>' +
+                       '<div class="value" style="font-size:18px;">1.82 <span class="unit">mSv</span></div>' +
+                       '<div style="margin-top:4px;">' + window.pill('stable', 'NOMINAL') + '</div>' +
+                     '</div>' +
+                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
+                       '<div class="tile-label">Atmosphere CO₂</div>' +
+                       '<div class="value" style="font-size:18px;">0.31 <span class="unit">%</span></div>' +
+                       '<div style="margin-top:4px;">' + window.pill('stable', 'NOMINAL') + '</div>' +
+                     '</div>' +
+                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
+                       '<div class="tile-label">Hab Temp</div>' +
+                       '<div class="value" style="font-size:18px;">21.4 <span class="unit">°C</span></div>' +
+                       '<div style="margin-top:4px;">' + window.pill('stable', 'NOMINAL') + '</div>' +
+                     '</div>' +
+                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
+                       '<div class="tile-label">Relative Humidity</div>' +
+                       '<div class="value" style="font-size:18px;">44 <span class="unit">%</span></div>' +
+                       '<div style="margin-top:4px;">' + window.pill('stable', 'NOMINAL') + '</div>' +
+                     '</div>' +
+                   '</div>' +
+                 '</div>' +
+               '</div>' +
+
+               '<!-- Right Column: Mission Hero -->' +
+               '<div class="card mission-hero" style="min-height:300px;">' +
+                 '<div class="mars-sphere"></div>' +
+                 '<div style="position:relative; z-index:2;">' +
+                   '<div style="font-size:12px; font-weight:700; color:#38BDF8;">MARS TRANSIT TRAJECTORY</div>' +
+                   '<h3 style="font-size:24px; font-weight:900; margin:8px 0 14px;">DAY 184 OF 912</h3>' +
+                   '<div class="rowline" style="border-color:rgba(255,255,255,0.15); color:#FFF;"><span>Distance</span><span style="font-weight:700;">128.4M km</span></div>' +
+                   '<div class="rowline" style="border-color:rgba(255,255,255,0.15); color:#FFF;"><span>Comm Lag</span><span style="font-weight:700;">14.2 min</span></div>' +
+                   '<div class="rowline" style="border-color:rgba(255,255,255,0.15); color:#FFF;"><span>Trajectory Delta-V</span><span style="font-weight:700; color:#38BDF8;">0.00 m/s (On Track)</span></div>' +
+                 '</div>' +
+               '</div>' +
+             '</div>';
+    }
+  };
+})();
