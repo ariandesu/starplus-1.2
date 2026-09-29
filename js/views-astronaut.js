@@ -74,6 +74,17 @@
                    window.pill('stable', 'ALL SYSTEMS NOMINAL') +
                  '</div>' +
                  '<div id="body-3d-canvas" class="canvas-3d-wrapper" style="height:340px; background:#F8FAFC; border-radius:12px; border:1px solid #E2E8F0;"></div>' +
+                 '<div style="margin-top:14px; padding-top:12px; border-top:1px solid #E2E8F0;">' +
+                   '<div style="font-size:11px; font-weight:700; color:#64748B; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Inspect Organ Systems in 3D:</div>' +
+                   '<div style="display:flex; flex-wrap:wrap; gap:6px;">' +
+                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'cardiovascular\')">🫀 Heart</button>' +
+                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'respiratory\')">🫁 Lungs</button>' +
+                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'neurological\')">🧠 Brain</button>' +
+                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'musculoskeletal\')">🦴 Skeleton</button>' +
+                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'immune\')">🛡️ Endocrine</button>' +
+                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'behavioral\')">🛌 Sleep Pod</button>' +
+                   '</div>' +
+                 '</div>' +
                '</div>' +
 
                '<!-- Right Stack: Health Changes & Quick Actions -->' +
@@ -146,6 +157,84 @@
       var sysObj = SYSTEMS.find(function(s) { return s.id === sysId; }) || SYSTEMS[0];
       var tab = S.subTab || 'overview';
 
+      var tabContentHtml = '';
+      if (tab === 'overview') {
+        var paramsHtml = (sysObj.parameters || []).map(function(p) {
+          var pillStatus = p.status === 'Stable' ? 'stable' : (p.status === 'Attention' ? 'attention' : 'monitoring');
+          return '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
+                   '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                     '<div class="tile-label">' + p.label + '</div>' +
+                     '<span style="font-size:10px; font-weight:700; color:#64748B;">' + p.delta + '</span>' +
+                   '</div>' +
+                   '<div class="value" style="font-size:20px; margin-top:4px;">' + p.val + ' <span class="unit">' + p.unit + '</span></div>' +
+                   '<div style="margin-top:6px;">' + window.pill(pillStatus, p.status.toUpperCase()) + '</div>' +
+                 '</div>';
+        }).join('');
+
+        tabContentHtml = 
+          '<div class="card" style="margin-bottom:20px;">' +
+            '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Key Telemetry Parameters</div>' +
+            '<div class="four" style="margin-bottom:0;">' + paramsHtml + '</div>' +
+          '</div>' +
+          '<div class="card">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
+              '<div style="font-size:16px; font-weight:700;">' + (sysObj.chartTitle || '7-Day Trend Chart') + '</div>' +
+              '<div class="tabs">' +
+                '<button class="tab ' + (S.range==='1D'?'on':'') + '" onclick="S.set({range:\'1D\'})">1D</button>' +
+                '<button class="tab ' + (S.range==='7D'?'on':'') + '" onclick="S.set({range:\'7D\'})">7D</button>' +
+                '<button class="tab ' + (S.range==='30D'?'on':'') + '" onclick="S.set({range:\'30D\'})">30D</button>' +
+              '</div>' +
+            '</div>' +
+            window.areaChart(sysObj.chartData || [64, 68, 66, 72, 70, 68, 67], DAYS, '#1769E8', 460, 160) +
+          '</div>';
+      } else if (tab === 'trends') {
+        tabContentHtml = 
+          '<div class="card" style="margin-bottom:20px;">' +
+            '<div style="font-size:16px; font-weight:700; margin-bottom:12px;">Comparative Telemetry Streams</div>' +
+            window.multiLineChart([
+              { color: '#1769E8', data: sysObj.chartData || [64, 68, 66, 72, 70, 68, 67] },
+              { color: '#16B978', data: [98, 98, 97, 98, 98, 99, 98] },
+              { color: '#E94B5F', data: [118, 120, 124, 122, 119, 118, 117] }
+            ], DAYS, 460, 180) +
+            '<div style="display:flex; justify-content:center; gap:20px; margin-top:14px; font-size:12px; font-weight:600;">' +
+              '<span style="color:#1769E8;">● Primary Metric</span>' +
+              '<span style="color:#16B978;">● SpO₂ Compliance</span>' +
+              '<span style="color:#E94B5F;">● Systolic Baseline</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="card">' +
+            '<div style="font-size:15px; font-weight:700; margin-bottom:8px;">Sensor Sampling Quality</div>' +
+            '<div class="rowline"><span>Sampling Frequency</span><span style="font-weight:700;">100 Hz Real-Time</span></div>' +
+            '<div class="rowline"><span>Data Loss / Jitter</span><span style="font-weight:700; color:#16B978;">0.00% (Lossless)</span></div>' +
+            '<div class="rowline"><span>Packet Latency</span><span style="font-weight:700;">12 ms (Sub-second)</span></div>' +
+          '</div>';
+      } else if (tab === 'insights') {
+        tabContentHtml = 
+          '<div class="card">' +
+            '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">NASA HRP Clinical Insights</div>' +
+            (sysObj.insights || []).map(function(ins) {
+              return '<div style="background:#F8FAFC; padding:14px; border-radius:10px; border:1px solid #E2E8F0; margin-bottom:12px;">' +
+                       '<div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#0F172A; margin-bottom:6px;">' +
+                         '<span style="color:#1769E8;">' + window.icon('brain', 16) + '</span>' +
+                         ins.title +
+                       '</div>' +
+                       '<div style="font-size:13px; color:#475569; line-height:1.5;">' + ins.text + '</div>' +
+                     '</div>';
+            }).join('') +
+          '</div>';
+      } else if (tab === 'recommendations') {
+        tabContentHtml = 
+          '<div class="card">' +
+            '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Flight Surgeon Clinical Directives</div>' +
+            (sysObj.recommendations || []).map(function(rec, idx) {
+              return '<div class="rowline" style="align-items:flex-start;">' +
+                       '<div style="width:24px; height:24px; border-radius:50%; background:#EAF3FF; color:#1769E8; display:grid; place-items:center; font-weight:700; font-size:12px; flex-shrink:0;">' + (idx+1) + '</div>' +
+                       '<div style="font-size:13px; color:#334155; line-height:1.5;">' + rec + '</div>' +
+                     '</div>';
+            }).join('') +
+          '</div>';
+      }
+
       return '<div class="head">' +
                '<div>' +
                  '<div style="display:flex; align-items:center; gap:12px;">' +
@@ -153,7 +242,7 @@
                    '<h2>' + sysObj.name + ' System</h2>' +
                    window.pill(sysObj.status, sysObj.status.toUpperCase()) +
                  '</div>' +
-                 '<p style="margin-top:6px;">Detailed sensor stream and diagnostic telemetry</p>' +
+                 '<p style="margin-top:6px;">' + sysObj.blurb + '</p>' +
                '</div>' +
                '<div class="tabs">' +
                  '<button class="tab ' + (tab==='overview'?'on':'') + '" onclick="S.set({subTab:\'overview\'})">Overview</button>' +
@@ -163,49 +252,35 @@
                '</div>' +
              '</div>' +
 
+             '<!-- Organ Quick Switcher -->' +
+             '<div class="card" style="margin-bottom:20px; padding:10px 14px;">' +
+               '<div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:2px;">' +
+                 '<span style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; white-space:nowrap;">Quick Organ Switch:</span>' +
+                 '<button class="tab ' + (sysId==='cardiovascular'?'on':'') + '" onclick="S.openSys(\'cardiovascular\')">🫀 Heart</button>' +
+                 '<button class="tab ' + (sysId==='respiratory'?'on':'') + '" onclick="S.openSys(\'respiratory\')">🫁 Lungs</button>' +
+                 '<button class="tab ' + (sysId==='neurological'?'on':'') + '" onclick="S.openSys(\'neurological\')">🧠 Brain</button>' +
+                 '<button class="tab ' + (sysId==='musculoskeletal'?'on':'') + '" onclick="S.openSys(\'musculoskeletal\')">🦴 Skeleton</button>' +
+                 '<button class="tab ' + (sysId==='immune'?'on':'') + '" onclick="S.openSys(\'immune\')">🛡️ Endocrine</button>' +
+                 '<button class="tab ' + (sysId==='behavioral'?'on':'') + '" onclick="S.openSys(\'behavioral\')">🛌 Sleep Pod</button>' +
+                 '<button class="tab ' + (sysId==='radiation'?'on':'') + '" onclick="S.openSys(\'radiation\')">☢️ Radiation</button>' +
+                 '<button class="tab ' + (sysId==='environmental'?'on':'') + '" onclick="S.openSys(\'environmental\')">🌌 Hab Life</button>' +
+               '</div>' +
+             '</div>' +
+
              '<div class="two">' +
                '<!-- Left: 3D Organ Canvas -->' +
                '<div class="card">' +
-                 '<div style="font-size:16px; font-weight:700; margin-bottom:12px;">3D Organ Telemetry Model</div>' +
-                 '<div id="detail-3d-canvas" class="canvas-3d-wrapper" style="height:360px; background:#F8FAFC; border-radius:12px; border:1px solid #E2E8F0;"></div>' +
-                 '<div style="text-align:center; margin-top:12px;" class="muted">Drag to rotate • Scroll to zoom 3D model</div>' +
+                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
+                   '<div style="font-size:16px; font-weight:700;">3D ' + sysObj.name + ' Model</div>' +
+                   window.pill('stable', 'INTERACTIVE 3D') +
+                 '</div>' +
+                 '<div id="detail-3d-canvas" class="canvas-3d-wrapper" style="height:380px; background:#F8FAFC; border-radius:12px; border:1px solid #E2E8F0;"></div>' +
+                 '<div style="text-align:center; margin-top:12px;" class="muted">Drag to rotate 360° • Scroll to zoom • Studio WebGL lighting</div>' +
                '</div>' +
 
-               '<!-- Right Stack: Key Metrics & 7-Day Trend Chart -->' +
-               '<div style="display:flex; flex-direction:column; gap:20px;">' +
-                 '<div class="card">' +
-                   '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Key Telemetry Parameters</div>' +
-                   '<div class="four" style="margin-bottom:0;">' +
-                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
-                       '<div class="tile-label">Heart Rate</div>' +
-                       '<div class="value" style="font-size:20px;">68 <span class="unit">bpm</span></div>' +
-                     '</div>' +
-                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
-                       '<div class="tile-label">Blood Pressure</div>' +
-                       '<div class="value" style="font-size:18px;">118/76</div>' +
-                     '</div>' +
-                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
-                       '<div class="tile-label">HRV</div>' +
-                       '<div class="value" style="font-size:20px;">64 <span class="unit">ms</span></div>' +
-                     '</div>' +
-                     '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
-                       '<div class="tile-label">Recovery Score</div>' +
-                       '<div class="value" style="font-size:18px; color:#16B978;">GOOD</div>' +
-                     '</div>' +
-                   '</div>' +
-                 '</div>' +
-
-                 '<div class="card">' +
-                   '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
-                     '<div style="font-size:16px; font-weight:700;">7-Day Vital Trend Chart</div>' +
-                     '<div class="tabs">' +
-                       '<button class="tab ' + (S.range==='1D'?'on':'') + '" onclick="S.set({range:\'1D\'})">1D</button>' +
-                       '<button class="tab ' + (S.range==='7D'?'on':'') + '" onclick="S.set({range:\'7D\'})">7D</button>' +
-                       '<button class="tab ' + (S.range==='30D'?'on':'') + '" onclick="S.set({range:\'30D\'})">30D</button>' +
-                     '</div>' +
-                   '</div>' +
-                   window.areaChart([64, 68, 66, 72, 70, 68, 67], DAYS, '#1769E8', 460, 160) +
-                 '</div>' +
+               '<!-- Right Stack: Tab Dependent Content -->' +
+               '<div style="display:flex; flex-direction:column; gap:0;">' +
+                 tabContentHtml +
                '</div>' +
              '</div>';
     },

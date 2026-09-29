@@ -15,88 +15,240 @@ const SYSTEMS = [
     name: 'Cardiovascular',
     icon: 'heart',
     status: 'Stable',
-    tags: 'Heart rate, BP, HRV',
+    tags: 'Heart rate, BP, HRV, Stroke Volume',
     metrics: 'Heart Rate: 68 bpm • BP: 118/76 mmHg • HRV: 64 ms',
-    blurb: 'Heart rate, blood pressure, heart-rate variability and cardiovascular fitness.',
+    blurb: 'Heart rate, blood pressure, heart-rate variability and cardiovascular stroke volume.',
     model: 'models/organs/realistic_human_heart.glb',
-    series: [64, 66, 65, 68, 67, 69, 68]
+    miniModel: 'models/organs/VH_M_Heart.glb',
+    cameraPos: [0, 0, 2.4],
+    series: [64, 66, 65, 68, 67, 69, 68],
+    chartTitle: '7-Day Mean Resting Heart Rate (bpm)',
+    chartUnit: 'bpm',
+    chartData: [64, 68, 66, 72, 70, 68, 67],
+    parameters: [
+      { label: 'Heart Rate', val: '68', unit: 'bpm', status: 'Stable', delta: '+2 bpm' },
+      { label: 'Blood Pressure', val: '118/76', unit: 'mmHg', status: 'Stable', delta: 'Nominal' },
+      { label: 'HRV (RMSSD)', val: '64', unit: 'ms', status: 'Stable', delta: '+4 ms' },
+      { label: 'Stroke Volume', val: '84', unit: 'mL', status: 'Stable', delta: '-3%' }
+    ],
+    insights: [
+      { title: 'Microgravity Fluid Shift Stabilization', text: 'Cephalad fluid redistribution has reached equilibrium. Left ventricular stroke volume and arterial compliance remain nominal.' },
+      { title: 'Aerobic Capacity (VO₂ Max)', text: 'VO₂ max retention is 94.2% relative to terrestrial baseline, maintained via daily CEVIS cycle protocols.' }
+    ],
+    recommendations: [
+      'Maintain daily 30-min CEVIS cycle ergometer protocol at 75% max HR.',
+      'Target daily fluid intake of 2.8 L with electrolyte mineral packs.'
+    ]
   },
   {
     id: 'respiratory',
     name: 'Respiratory',
     icon: 'lung',
     status: 'Stable',
-    tags: 'SpO₂, respiratory rate',
+    tags: 'SpO₂, resp rate, tidal volume',
     metrics: 'SpO₂: 98% • Resp Rate: 14 br/min • Tidal Vol: 520 mL',
-    blurb: 'Blood oxygen saturation, respiratory rate and pulmonary function.',
-    model: 'models/organs/VH_M_Lung.glb',
-    series: [97, 98, 98, 97, 98, 98, 98]
+    blurb: 'Blood oxygen saturation, respiratory rate, alveolar diffusion and pulmonary compliance.',
+    model: 'models/organs/realistic_human_lungs.glb',
+    miniModel: 'models/organs/VH_M_Lung.glb',
+    cameraPos: [0, 0, 2.6],
+    series: [97, 98, 98, 97, 98, 98, 98],
+    chartTitle: '7-Day Blood Oxygen Saturation SpO₂ (%)',
+    chartUnit: '%',
+    chartData: [97, 98, 98, 97, 98, 98, 98],
+    parameters: [
+      { label: 'SpO₂ Saturation', val: '98', unit: '%', status: 'Stable', delta: 'Nominal' },
+      { label: 'Resp Rate', val: '14', unit: 'br/min', status: 'Stable', delta: '0 br/min' },
+      { label: 'Tidal Volume', val: '520', unit: 'mL', status: 'Stable', delta: '+15 mL' },
+      { label: 'Alveolar Diffusion', val: '99.1', unit: '%', status: 'Stable', delta: 'Nominal' }
+    ],
+    insights: [
+      { title: 'Pulmonary Ventilation-Perfusion (V/Q)', text: 'Alveolar gas exchange in 0G is optimal. No signs of airway constriction or trace particulate aerosol irritation.' },
+      { title: 'EVA Suit Hyperoxia Tolerance', text: 'During simulated EVA pressure cycles (4.3 psi 100% O₂), respiratory compliance remained within 98% nominal.' }
+    ],
+    recommendations: [
+      'Inspect cabin HEPA filter flow velocity and trace particulate sensors on Sol 185.',
+      'Perform weekly spirometry assessment via the BioMonitor smart chest harness.'
+    ]
   },
   {
     id: 'neurological',
     name: 'Neurological',
     icon: 'brain',
     status: 'Stable',
-    tags: 'Cognitive, balance',
+    tags: 'Cognitive, balance, EEG',
     metrics: 'Cognitive: 91 pts • Reaction: 212 ms • Balance: 94 pts',
-    blurb: 'Cognitive performance, balance, reaction time and vestibular function.',
-    model: 'models/organs/Allen_M_Brain.glb',
-    series: [88, 90, 89, 91, 90, 92, 91]
+    blurb: 'Cognitive performance, balance, reaction time, EEG rhythms and vestibular neuro-adaptation.',
+    model: 'models/organs/realistic_human_brain.glb',
+    miniModel: 'models/organs/Allen_M_Brain.glb',
+    cameraPos: [0, 0, 2.5],
+    series: [88, 90, 89, 91, 90, 92, 91],
+    chartTitle: '7-Day Cognitive Performance Score (pts)',
+    chartUnit: 'pts',
+    chartData: [88, 90, 89, 91, 90, 92, 91],
+    parameters: [
+      { label: 'Cognitive Score', val: '91', unit: 'pts', status: 'Stable', delta: '+1 pt' },
+      { label: 'Reaction Time', val: '212', unit: 'ms', status: 'Stable', delta: '-8 ms' },
+      { label: 'Vestibular Balance', val: '94', unit: 'pts', status: 'Stable', delta: '+3 pts' },
+      { label: 'EEG Alpha Power', val: '8.4', unit: 'µV²', status: 'Stable', delta: 'Nominal' }
+    ],
+    insights: [
+      { title: 'Space Motion Sickness (SMS) Resolution', text: 'Neurovestibular otolith adaptation is complete. Saccadic eye movement and visual tracking latency improved to 212 ms.' },
+      { title: 'Sleep Spindle Density & Coherence', text: 'NREM Stage 3 delta wave coherence is healthy, supporting procedural memory consolidation during transit.' }
+    ],
+    recommendations: [
+      'Complete 10-minute VR neurocognitive calibration before scheduled airlock ingress.',
+      'Maintain 22:00 UTC cabin light dimming to reinforce suprachiasmatic circadian rhythm.'
+    ]
   },
   {
     id: 'musculoskeletal',
     name: 'Musculoskeletal',
     icon: 'bone',
     status: 'Attention',
-    tags: 'Bone, muscle, exercise',
+    tags: 'Bone mineral, muscle mass, ARED',
     metrics: 'Bone Mineral: -1.2% • Muscle Mass: 92% • Strength: 88 pts',
-    blurb: 'Bone density, muscle mass, strength and exercise countermeasures.',
-    model: 'models/organs/Skeleton.glb',
-    series: [82, 80, 78, 77, 75, 74, 72]
+    blurb: 'Bone mineral density, muscle volume retention, biomechanical strength and resistive loading.',
+    model: 'models/organs/realistic_human_skeleton.glb',
+    miniModel: 'models/organs/Skeleton.glb',
+    cameraPos: [0, 0, 3.2],
+    series: [82, 80, 78, 77, 75, 74, 72],
+    chartTitle: '7-Day Skeletal Loading Compliance (%)',
+    chartUnit: '%',
+    chartData: [82, 80, 78, 77, 75, 74, 72],
+    parameters: [
+      { label: 'Bone Mineral Density', val: '-1.2', unit: '%', status: 'Attention', delta: '-0.3%' },
+      { label: 'Muscle Volume', val: '92', unit: '%', status: 'Attention', delta: '-1.5%' },
+      { label: 'Grip Strength', val: '46', unit: 'kg', status: 'Stable', delta: '-1 kg' },
+      { label: 'ARED Load Score', val: '96', unit: '%', status: 'Stable', delta: '+4%' }
+    ],
+    insights: [
+      { title: 'Calcaneus & Lumbar Osteoclast Activity', text: 'Biomarkers show mild calcium turnover increase. Calcaneus bone mineral density is down 1.2% from launch baseline.' },
+      { title: 'Anti-Gravity Muscle Preservation', text: 'Soleus and gastrocnemius muscle volume retention is within expected envelope under ARED heavy resistive loading.' }
+    ],
+    recommendations: [
+      'Increase ARED deadlift and squat resistance target to 650 kg-equivalent.',
+      'Administer weekly oral bisphosphonate and 2000 IU vitamin D3 countermeasure dose.'
+    ]
   },
   {
     id: 'immune',
-    name: 'Immune',
+    name: 'Immune & Endocrine',
     icon: 'shield',
     status: 'Monitoring',
-    tags: 'Immune markers, WBC',
+    tags: 'WBC, CRP, cortisol, T-cells',
     metrics: 'WBC Count: 6.4 k/µL • CRP: 0.8 mg/L • Stress Marker: Nominal',
-    blurb: 'Immune markers, inflammation load and infection risk in microgravity.',
+    blurb: 'Immune markers, inflammatory cytokine load, endocrine balance and microgravity infection resistance.',
     model: 'models/organs/Endocrine.glb',
-    series: [70, 72, 71, 69, 70, 68, 69]
+    miniModel: 'models/organs/Endocrine.glb',
+    cameraPos: [0, 0, 2.5],
+    series: [70, 72, 71, 69, 70, 68, 69],
+    chartTitle: '7-Day Immune Competence Score',
+    chartUnit: 'pts',
+    chartData: [70, 72, 71, 69, 70, 68, 69],
+    parameters: [
+      { label: 'WBC Count', val: '6.4', unit: 'k/µL', status: 'Stable', delta: 'Nominal' },
+      { label: 'C-Reactive Protein', val: '0.8', unit: 'mg/L', status: 'Stable', delta: '-0.2' },
+      { label: 'Salivary Cortisol', val: '12.4', unit: 'nmol/L', status: 'Monitoring', delta: '+1.1' },
+      { label: 'T-Cell Activation', val: '88', unit: '%', status: 'Monitoring', delta: '-3%' }
+    ],
+    insights: [
+      { title: 'Cytokine Profile & Latent Virus Suppression', text: 'EBV and CMV antibody titers are suppressed and stable. No clinical viral reactivation observed in telemetry.' },
+      { title: 'Microgravity T-Cell Signaling', text: 'CD4+/CD8+ lymphocyte ratio shows typical microgravity shift with mild suppression under high workload sols.' }
+    ],
+    recommendations: [
+      'Continue prophylactic multi-strain probiotic regimen and antioxidant nutritional pack.',
+      'Run automated capillary blood count cartridge on Sol 186.'
+    ]
   },
   {
     id: 'behavioral',
-    name: 'Behavioral',
+    name: 'Behavioral & Circadian',
     icon: 'sleep',
     status: 'Attention',
-    tags: 'Sleep, stress, mood',
+    tags: 'Sleep duration, REM, circadian shift',
     metrics: 'Sleep: 6.2 hrs • Stress: 26 pts • Circadian: -42 min',
-    blurb: 'Sleep-wake cycle, stress index, mood and cognitive workload.',
+    blurb: 'Sleep-wake architecture, cognitive workload, circadian alignment and stress resilience.',
     model: 'models/organs/sleep_astronaut.glb',
-    series: [60, 58, 55, 52, 50, 52, 49]
+    miniModel: 'models/organs/sleep_astronaut.glb',
+    cameraPos: [0, 0, 2.6],
+    series: [60, 58, 55, 52, 50, 52, 49],
+    chartTitle: '7-Day Nightly Sleep Duration (Hours)',
+    chartUnit: 'hrs',
+    chartData: [7.2, 6.8, 6.5, 5.8, 6.0, 5.4, 6.2],
+    parameters: [
+      { label: 'Sleep Duration', val: '6.2', unit: 'hrs', status: 'Attention', delta: '-1.3 hrs' },
+      { label: 'Stress Index', val: '26', unit: 'pts', status: 'Stable', delta: '+2 pts' },
+      { label: 'REM Percentage', val: '22', unit: '%', status: 'Stable', delta: 'Nominal' },
+      { label: 'Circadian Phase', val: '-42', unit: 'min', status: 'Attention', delta: '-12 min' }
+    ],
+    insights: [
+      { title: 'Circadian Desynchrony Detection', text: 'Recent mission timeline compression shifted sleep onset by 42 minutes, causing slight REM sleep debt.' },
+      { title: 'Psychological Cohesion Index', text: 'Crew cohesion, team interaction sentiment, and morale metrics remain high at 92/100.' }
+    ],
+    recommendations: [
+      'Activate 460nm blue-enriched circadian lighting in crew sleep pod at 06:00 UTC.',
+      'Administer 0.5 mg micro-dose sublingual melatonin 30 minutes before sleep.'
+    ]
   },
   {
     id: 'radiation',
     name: 'Radiation Dosimetry',
     icon: 'radiation',
     status: 'Monitoring',
-    tags: 'Exposure, dose rate',
+    tags: 'GCR dose, SPE flare, career limit',
     metrics: 'Dose Rate: 1.82 mSv/day • Career: 214 mSv (35%)',
-    blurb: 'Cumulative dose, dose rate and solar particle event exposure.',
+    blurb: 'Cumulative cosmic ray dose, solar particle event exposure, and tissue organ weighting factors.',
     model: 'models/organs/realistic_human_skeleton.glb',
-    series: [1.6, 1.7, 1.9, 1.8, 2.0, 1.9, 1.8]
+    miniModel: 'models/organs/Skeleton.glb',
+    cameraPos: [0, 0, 3.2],
+    series: [1.6, 1.7, 1.9, 1.8, 2.0, 1.9, 1.8],
+    chartTitle: '7-Day Cosmic Radiation Dose Rate (mSv/day)',
+    chartUnit: 'mSv',
+    chartData: [1.6, 1.7, 1.9, 1.8, 2.0, 1.9, 1.8],
+    parameters: [
+      { label: 'Dose Rate', val: '1.82', unit: 'mSv/d', status: 'Monitoring', delta: '+0.12' },
+      { label: 'Cumulative Career', val: '214', unit: 'mSv', status: 'Stable', delta: '35% Limit' },
+      { label: 'SPE Shielding', val: '99.4', unit: '%', status: 'Stable', delta: 'Nominal' },
+      { label: 'Stem Cell Index', val: '96', unit: '%', status: 'Stable', delta: 'Nominal' }
+    ],
+    insights: [
+      { title: 'Galactic Cosmic Ray (GCR) Baseline', text: 'Interplanetary cruise background radiation is averaging 1.82 mSv/day. Water-wall shielding attenuation is nominal.' },
+      { title: 'Tissue Weighting (H_T) Margins', text: 'Hematopoietic bone marrow and ocular lens dosimeter readings are well within NASA 600 mSv career margins.' }
+    ],
+    recommendations: [
+      'Maintain storm-shelter positioning during high-altitude coronal mass ejection alerts.',
+      'Inspect personal dosimeter passive luminescence crystals on Sol 190.'
+    ]
   },
   {
     id: 'environmental',
     name: 'Hab Environmental',
     icon: 'cloud',
     status: 'Stable',
-    tags: 'Atmosphere, CO₂, temp',
+    tags: 'Cabin O₂, CO₂, temperature, pressure',
     metrics: 'Cabin O₂: 20.9% • CO₂: 0.31% • Temp: 21.4°C',
-    blurb: 'Cabin atmosphere, CO₂ partial pressure, temperature and humidity.',
+    blurb: 'Cabin atmosphere, CO₂ partial pressure, ambient temperature, humidity and closed-loop ECLSS.',
     model: 'models/organs/realistic_human_skeleton.glb',
-    series: [98, 98, 97, 98, 98, 98, 98]
+    miniModel: 'models/organs/Skeleton.glb',
+    cameraPos: [0, 0, 3.2],
+    series: [98, 98, 97, 98, 98, 98, 98],
+    chartTitle: '7-Day ECLSS Habitability Index (%)',
+    chartUnit: '%',
+    chartData: [98, 98, 97, 98, 98, 98, 98],
+    parameters: [
+      { label: 'Cabin O₂', val: '20.9', unit: '%', status: 'Stable', delta: 'Nominal' },
+      { label: 'Atmosphere CO₂', val: '0.31', unit: '%', status: 'Stable', delta: '-0.02%' },
+      { label: 'Cabin Temp', val: '21.4', unit: '°C', status: 'Stable', delta: '+0.2°C' },
+      { label: 'Relative Humidity', val: '44', unit: '%', status: 'Stable', delta: 'Nominal' }
+    ],
+    insights: [
+      { title: 'ECLSS Closed-Loop Recovery', text: 'Sabatier reactor CO₂ reduction and water recovery loop operating at 94.8% closed-loop efficiency.' },
+      { title: 'Acoustic & Pressure Nominal', text: 'Cabin ambient noise level is 52 dBA, well below the 60 dBA sleep interference threshold.' }
+    ],
+    recommendations: [
+      'Cycle trace contaminant catalytic oxidizer bed on Sol 188.',
+      'Calibrate cabin ultrasonic atmospheric leak detection array.'
+    ]
   }
 ];
 
@@ -328,3 +480,15 @@ const SLIDERS = [
   { id: 'sleep', label: 'Sleep Quality & Rest', minLabel: 'Restless', maxLabel: 'Deep Rest', defaultVal: 65, color: '#F5A623' },
   { id: 'workload', label: 'Daily Operational Workload', minLabel: 'Light', maxLabel: 'Heavy EVA', defaultVal: 70, color: '#E94B5F' }
 ];
+
+const PROFILE = {
+  name: 'Alex Carter',
+  rank: 'Commander',
+  id: 'AST-001',
+  mission: 'ARES-V Mars Expedition',
+  avatar: 'AC',
+  daysInSpace: 184,
+  evaCount: 3,
+  evaHours: 19.5,
+  bloodType: 'O+'
+};

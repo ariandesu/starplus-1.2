@@ -42,7 +42,7 @@
     // Screen 14: Medical Officer — Crew Detail (J. Kim)
     crewDetail: function() {
       var crewId = S.crewId || 'AST-002';
-      var c = CREW.find(function(item) { return item.id === crewId; }) || CREW[1];
+      var c = CREW.find(function(item) { return item.id === crewId || item.name.toLowerCase().includes(crewId.toLowerCase()); }) || CREW[1];
 
       return '<div class="head">' +
                '<div>' +
@@ -51,11 +51,21 @@
                    '<h2>' + c.name + ' Telemetry</h2>' +
                    window.pill(c.status, c.status.toUpperCase()) +
                  '</div>' +
-                 '<p style="margin-top:4px;">' + c.role + ' • ID: ' + c.id + '</p>' +
+                 '<p style="margin-top:4px;">' + c.role + ' • ID: ' + c.sid + '</p>' +
                '</div>' +
              '</div>' +
 
-             '<div class="two">' +
+             '<div class="two" style="margin-bottom:20px;">' +
+               '<!-- 3D Anatomical Scan -->' +
+               '<div class="card">' +
+                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
+                   '<div style="font-size:16px; font-weight:700;">3D Biomechanical Telemetry Scan</div>' +
+                   window.pill(c.status, 'ACTIVE 3D') +
+                 '</div>' +
+                 '<div id="crew-3d-canvas" class="canvas-3d-wrapper" style="height:340px; background:#F8FAFC; border-radius:12px; border:1px solid #E2E8F0;"></div>' +
+                 '<div style="text-align:center; margin-top:10px;" class="muted">Interactive continuous zero-g biomechanical kinematic scan</div>' +
+               '</div>' +
+
                '<!-- Multi-line Vital Chart -->' +
                '<div class="card">' +
                  '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">7-Day Multi-Metric Telemetry Chart</div>' +
@@ -70,20 +80,20 @@
                    '<span style="color:#16B978;">● SpO₂ (%)</span>' +
                  '</div>' +
                '</div>' +
+             '</div>' +
 
-               '<!-- Recent Events List -->' +
-               '<div class="card">' +
-                 '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Clinical Events &amp; Observations</div>' +
-                 EVENTS.map(function(ev) {
-                   return '<div class="rowline">' +
-                            '<div>' +
-                              '<div style="font-weight:700;">' + ev.title + '</div>' +
-                              '<div style="font-size:11px; color:#94A3B8;">' + ev.time + ' • ' + ev.desc + '</div>' +
-                            '</div>' +
-                            window.pill(ev.status, ev.status.toUpperCase()) +
-                          '</div>';
-                 }).join('') +
-               '</div>' +
+             '<!-- Recent Events List -->' +
+             '<div class="card">' +
+               '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Clinical Events &amp; Observations</div>' +
+               EVENTS.map(function(ev) {
+                 return '<div class="rowline">' +
+                          '<div>' +
+                            '<div style="font-weight:700;">' + ev.title + '</div>' +
+                            '<div style="font-size:11px; color:#94A3B8;">' + ev.time + ' • ' + ev.desc + '</div>' +
+                          '</div>' +
+                          window.pill(ev.status, ev.status.toUpperCase()) +
+                        '</div>';
+               }).join('') +
              '</div>';
     },
 

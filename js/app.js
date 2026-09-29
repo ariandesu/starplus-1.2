@@ -98,7 +98,7 @@
         'cardiovascular': 'models/organs/realistic_human_heart.glb',
         'respiratory': 'models/organs/VH_M_Lung.glb',
         'neurological': 'models/organs/Allen_M_Brain.glb',
-        'musculoskeletal': 'models/organs/Skeleton.glb',
+        'musculoskeletal': 'models/organs/realistic_human_skeleton.glb',
         'immune': 'models/organs/Endocrine.glb',
         'behavioral': 'models/organs/sleep_astronaut.glb',
         'radiation': 'models/organs/realistic_human_skeleton.glb',
@@ -110,6 +110,14 @@
         window.ThreeViewerManager.create('detail-3d-canvas', modelPath, {
           autoRotate: true,
           cameraPos: [0, 0, 2.5]
+        });
+      }
+    } else if (view === 'crew-detail') {
+      var crewElem = document.getElementById('crew-3d-canvas');
+      if (crewElem) {
+        window.ThreeViewerManager.create('crew-3d-canvas', 'models/organs/realistic_human_skeleton.glb', {
+          autoRotate: true,
+          cameraPos: [0, 0, 3.5]
         });
       }
     }
