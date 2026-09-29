@@ -42,7 +42,9 @@
     // Screen 14: Medical Officer — Crew Detail (J. Kim)
     crewDetail: function() {
       var crewId = S.crewId || 'AST-002';
-      var c = CREW.find(function(item) { return item.id === crewId || item.name.toLowerCase().includes(crewId.toLowerCase()); }) || CREW[1];
+      var c = CREW.find(function(item) { 
+        return item.id === crewId || item.sid === crewId || (item.name && item.name.toLowerCase().includes(String(crewId).toLowerCase())); 
+      }) || CREW[1];
 
       return '<div class="head">' +
                '<div>' +

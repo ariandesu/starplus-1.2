@@ -160,14 +160,15 @@
       var tabContentHtml = '';
       if (tab === 'overview') {
         var paramsHtml = (sysObj.parameters || []).map(function(p) {
-          var pillStatus = p.status === 'Stable' ? 'stable' : (p.status === 'Attention' ? 'attention' : 'monitoring');
+          var pStatus = p.status || 'Monitoring';
+          var pillStatus = pStatus.toLowerCase() === 'stable' ? 'stable' : (pStatus.toLowerCase() === 'attention' ? 'attention' : 'monitoring');
           return '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
                    '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-                     '<div class="tile-label">' + p.label + '</div>' +
-                     '<span style="font-size:10px; font-weight:700; color:#64748B;">' + p.delta + '</span>' +
+                     '<div class="tile-label">' + (p.label || '') + '</div>' +
+                     '<span style="font-size:10px; font-weight:700; color:#64748B;">' + (p.delta || '') + '</span>' +
                    '</div>' +
-                   '<div class="value" style="font-size:20px; margin-top:4px;">' + p.val + ' <span class="unit">' + p.unit + '</span></div>' +
-                   '<div style="margin-top:6px;">' + window.pill(pillStatus, p.status.toUpperCase()) + '</div>' +
+                   '<div class="value" style="font-size:20px; margin-top:4px;">' + (p.val !== undefined ? p.val : '--') + ' <span class="unit">' + (p.unit || '') + '</span></div>' +
+                   '<div style="margin-top:6px;">' + window.pill(pillStatus, pStatus.toUpperCase()) + '</div>' +
                  '</div>';
         }).join('');
 

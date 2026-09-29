@@ -36,8 +36,10 @@
     var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    if (renderer.outputColorSpace) {
+    if (typeof THREE.SRGBColorSpace !== 'undefined' && 'outputColorSpace' in renderer) {
       renderer.outputColorSpace = THREE.SRGBColorSpace;
+    } else if (typeof THREE.sRGBEncoding !== 'undefined' && 'outputEncoding' in renderer) {
+      renderer.outputEncoding = THREE.sRGBEncoding;
     }
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;

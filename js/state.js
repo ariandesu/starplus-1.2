@@ -109,15 +109,12 @@
 
     // Pub-Sub Event System
     subscribe: function(listener) {
-      if (typeof listener === 'function') {
+      if (typeof listener === 'function' && _listeners.indexOf(listener) === -1) {
         _listeners.push(listener);
       }
     },
 
     notify: function() {
-      if (typeof window.render === 'function') {
-        window.render();
-      }
       _listeners.forEach(function(fn) {
         try { fn(); } catch(e) { console.error('State subscriber error:', e); }
       });
