@@ -1,0 +1,87 @@
+// js/views-astronaut.js  (screens 02–12)
+function vOverview(){
+ var tone={bad:'#E94B5F',good:'#16B978',neutral:'#53657A'};
+ var dirIc={up:icon('arrowup',12),down:icon('arrowdown',12),flat:icon('minus',12)};
+ var ch='';CHANGES.forEach(function(c){ch+='<div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--slate)">'+c[0]+'</span><span style="display:inline-flex;gap:4px;align-items:center;font-weight:700;color:'+tone[c[2]]+'">'+dirIc[c[3]]+c[1]+'</span></div>'});
+ var sys='';SYSTEMS.forEach(function(s){sys+='<button class="sysrow" onclick="openSystem(\''+s.id+'\')"><span style="color:'+HEX[s.status]+'">'+icon(s.icon,15)+'</span><span style="flex:1;text-align:left;font-size:12px;font-weight:600;color:var(--navy)">'+s.name+'</span>'+pill(s.status)+'</button>'});
+ return head('Good Morning, Alex','Your health status is stable.',pill('Stable'))+
+ '<div class="ov-grid"><div class="grid">'+
+ '<div class="card" style="padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-color:#16b9784d;background:#16b9780d"><div style="display:flex;gap:12px;align-items:center"><span style="width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center">'+icon('check',16)+'</span><div><div style="font-size:13px;font-weight:700">Stable</div><div class="muted">No immediate health actions required.</div></div></div><button class="btn btn-green" onclick="go(\'systems\')">View Details</button></div>'+
+ '<div class="two"><div class="card" style="padding:16px"><div class="tile-label" style="margin-bottom:12px">What’s Changed (Last 24 Hours)</div><div class="grid" style="gap:10px">'+ch+'</div></div><div class="card" style="display:grid;place-items:center;padding:16px">'+bodyMap()+'</div></div>'+
+ '<div class="four">'+statTile('Heart Rate','68','bpm','#E94B5F',VITALS[0].series)+statTile('Blood Pressure','118/76','mmHg','#1769E8',VITALS[1].series)+statTile('SpO₂','98','%','#16B978',VITALS[2].series)+statTile('Sleep','7h 42m','','#7657E8',[7.2,6.9,7.5,6.4,5.8,6.2,7.7])+'</div>'+
+ '</div><div class="card" style="padding:16px;height:fit-content"><div class="tile-label" style="margin-bottom:10px">Body Systems</div>'+sys+'</div></div>';
+}
+function vSystems(){
+ var c='';SYSTEMS.forEach(function(s){c+='<button class="card hover" style="padding:16px;text-align:left" onclick="openSystem(\''+s.id+'\')">'+itile(s.icon,HEX[s.status])+'<div style="margin-top:12px;font-size:13px;font-weight:700;color:var(--navy)">'+s.name+'</div><div style="margin-top:6px">'+pill(s.status)+'</div><div class="muted" style="margin-top:8px">'+s.tags+'</div></button>'});
+ return head('Your Health Systems','Overview of all body systems and current status.')+'<div class="sys-grid">'+c+'</div>';
+}
+function vSystem(){
+ var s=SYSTEMS.find(function(x){return x.id===S.systemId})||SYSTEMS[0];
+ var range=t('sys-range','7D'),tab=t('sys-tab','Overview');
+ var rs=rangeSeries(s.series,range);
+ var metrics='';s.metrics.forEach(function(m){metrics+='<div class="rowline"><span style="color:var(--slate)">'+m[0]+'</span><span style="font-weight:700">'+m[1]+' <span class="unit">'+m[2]+'</span></span></div>'});
+ var body='';
+ if(tab==='Overview'||tab==='Trends')body=trendSVG(rs.map(function(p){return p[1]}),rs.map(function(p){return p[0]}),HEX[s.status]);
+ else if(tab==='Insights')body='<div class="grid" style="gap:8px;font-size:12px;color:var(--slate)"><div>• Values remain within the personal 30-day baseline corridor.</div><div>• The 72-hour moving window shows no acute deviation pattern.</div><div>• Countermeasure adherence for this system is on schedule.</div></div>';
+ else body='<div class="grid" style="gap:8px;font-size:12px;color:var(--slate)"><div>✓ Maintain current exercise countermeasure cadence.</div><div>✓ Re-check at the next scheduled assessment window.</div><div>✓ Log subjective symptoms in the daily wellness check-in.</div></div>';
+ var visual=s.id==='cardiovascular'?heartArt():('<span style="display:grid;place-items:center;width:112px;height:112px;border-radius:24px;background:'+HEX[s.status]+'14;color:'+HEX[s.status]+'">'+icon(s.icon,54)+'</span>');
+ return '<div class="head"><div style="display:flex;gap:12px;align-items:center"><button class="btn" onclick="go(\'systems\')">← Back</button><div><h2>'+s.name+'</h2><p>'+s.blurb+'</p></div></div>'+pill(s.status)+'</div>'+
+ '<div class="grid"><div class="two" style="grid-template-columns:300px 1fr"><div class="card" style="display:grid;place-items:center;padding:24px"><div style="text-align:center">'+visual+'<div class="muted" style="margin-top:12px">'+s.tags+'</div></div></div><div class="card">'+metrics+'</div></div>'+
+ '<div class="card" style="padding:20px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">'+tabsHTML('sys-tab',['Overview','Trends','Insights','Recommendations'])+tabsHTML('sys-range',['1D','7D','30D'])+'</div>'+body+'</div></div>';
+}
+function vVitals(){
+ var c='';VITALS.forEach(function(v){c+=statTile(v.label,v.value,v.unit,v.color,v.series)});
+ return head('Vital Signs','Real-time and recent vital sign measurements.',tabsHTML('vit-range',['Live','1D','7D','30D']))+'<div class="vit-grid">'+c+'</div>';
+}
+function vAssessments(){
+ return '<div style="max-width:640px;margin:0 auto"><div class="card" style="padding:24px">'+head('Cardiovascular Assessment','Step '+(S.step+1)+' of 4')+bar((S.step+1)*25)+
+ '<div class="card" style="margin-top:20px;padding:20px;background:var(--bg)"><div style="display:flex;gap:10px;align-items:center;font-size:13px;font-weight:700">'+itile('heartpulse','#1769E8',36)+STEPS[S.step]+'</div><p class="muted" style="margin-top:8px">Connect the approved monitoring device and remain still while the measurement is captured.</p>'+
+ '<div style="margin-top:16px;display:flex;justify-content:center;align-items:center;gap:40px;background:#fff;border:1px solid var(--soft);border-radius:12px;padding:20px;flex-wrap:wrap"><svg viewBox="0 0 80 60" style="height:64px"><rect x="18" y="8" width="44" height="34" rx="6" fill="#EAF3FF" stroke="#1769E8"/><circle cx="40" cy="25" r="10" fill="#fff" stroke="#1769E8"/><text x="40" y="28" text-anchor="middle" font-size="8" fill="#12213F" font-weight="700">118</text><rect x="8" y="46" width="64" height="8" rx="4" fill="#1769E8" opacity=".35"/></svg><div style="text-align:center"><div style="font-size:28px;font-weight:800">118 / 76</div><div class="unit">mmHg</div><div style="margin-top:8px;display:inline-flex;gap:4px;align-items:center;font-size:11px;font-weight:600;color:var(--green)">'+icon('checkcircle',13)+' Captured</div></div></div></div>'+
+ '<div style="margin-top:20px;display:flex;justify-content:space-between"><button class="btn" '+(S.step===0?'disabled':'')+' onclick="stepBack()">Back</button><button class="btn btn-p" onclick="stepNext()" style="min-width:96px">'+(S.step===3?'Finish':'Continue')+'</button></div></div></div>';
+}
+function vWellness(){
+ var m='';MOODS.forEach(function(mo,i){m+='<button class="mood'+(S.mood===i?' on':'')+'" onclick="setMood('+i+')"><span style="color:'+mo[2]+'">'+icon(mo[1],22)+'</span><span style="font-size:10px;font-weight:600;color:var(--slate)">'+mo[0]+'</span></button>'});
+ var sl='';SLIDERS.forEach(function(s2,i){sl+='<div class="sliderrow"><span style="font-weight:600;color:var(--navy)">'+s2[0]+'</span><input type="range" min="0" max="100" value="'+S.sliders[i]+'" style="accent-color:'+s2[4]+'" oninput="slideVal('+i+',this.value)"><span style="text-align:right">'+s2[1]+' → '+s2[2]+'</span></div>'});
+ return '<div style="max-width:640px;margin:0 auto"><div class="card" style="padding:24px">'+head('Daily Wellness Check-in','How are you feeling today?')+
+ '<div class="moodrow">'+m+'</div><div class="grid" style="gap:16px;margin-top:24px">'+sl+'</div>'+
+ '<div class="note" style="margin-top:20px;background:#f5a6231a;color:var(--amber)">'+icon('alert',14)+'<span>Your responses show increased workload compared with your recent baseline.</span></div>'+
+ (S.submitted?'<div class="note" style="margin-top:12px;background:#16b9781a;color:var(--green);font-weight:600">Check-in submitted — thank you.</div>':'')+
+ '<div style="margin-top:20px;display:flex;justify-content:flex-end"><button class="btn btn-p" onclick="submitWellness()">Submit Check-in</button></div></div></div>';
+}
+function vRadiation(){
+ var range=t('rad-range','7D');var rs=rangeSeries([1.6,1.7,1.9,1.8,2.0,1.9,1.8],range);
+ var seg='';for(var i=0;i<10;i++)seg+='<div style="height:16px;flex:1;border-radius:4px;background:'+(i<6?'var(--blue)':'var(--soft)')+'"></div>';
+ return head('Space Radiation','Current exposure and accumulated dose.')+
+ '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">'+
+ '<div class="card" style="padding:20px"><div class="tile-label">Current Exposure</div><div style="margin-top:4px;font-size:30px;font-weight:800">1.82 <span class="unit">mSv</span></div><div class="tile-label" style="margin-top:16px">Today’s Exposure</div><div style="display:flex;gap:4px;margin-top:8px">'+seg+'</div><div class="tile-label" style="margin-top:16px">Accumulated Mission</div><div style="margin-top:4px;font-size:22px;font-weight:800">214 <span class="unit">mSv</span></div>'+bar(35,'#7657E8')+'<div class="muted" style="margin-top:6px">35% of mission limit</div></div>'+
+ '<div class="card" style="padding:20px"><div class="tile-label" style="margin-bottom:12px">Environment</div><div class="grid" style="gap:10px"><div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:12px;padding:12px;font-size:12px;font-weight:600"><span style="display:inline-flex;gap:8px;align-items:center;color:var(--amber)">'+icon('sun',15)+'<span style="color:var(--navy)">Solar Activity</span></span><span class="pill" style="color:var(--amber);background:#f5a6231a">Moderate</span></div><div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:12px;padding:12px;font-size:12px;font-weight:600"><span style="display:inline-flex;gap:8px;align-items:center;color:var(--green)">'+icon('shieldcheck',15)+'<span style="color:var(--navy)">Shielding</span></span><span class="pill" style="color:var(--green);background:#16b9781a">Nominal</span></div></div></div>'+
+ '<div class="card" style="padding:20px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><div class="tile-label">Exposure Trend</div>'+tabsHTML('rad-range',['1D','7D','30D'])+'</div>'+trendSVG(rs.map(function(p){return p[1]}),rs.map(function(p){return p[0]}),'#7657E8',' mSv')+'</div></div>';
+}
+function vActivity(){
+ var rows='';ACTS.forEach(function(a){rows+='<div class="rowline"><div style="display:flex;gap:12px;align-items:center">'+itile('dumbbell','#1769E8',36)+'<div><div style="font-size:12px;font-weight:700">'+a[0]+'</div><div class="muted">'+a[1]+'</div></div></div><span style="color:var(--green)">'+icon('checkcircle',16)+'</span></div>'});
+ return head('Activity & Exercise','Physical activity, exercise and countermeasures.',tabsHTML('act-range',['Today','7D','30D']))+
+ '<div class="two" style="grid-template-columns:280px 1fr"><div class="card" style="display:grid;place-items:center;padding:24px"><div style="text-align:center">'+ringSVG(82,'#16B978')+'<div class="tile-label" style="margin-top:12px">Activity Goal</div><div style="font-size:13px;font-weight:700;color:var(--green)">620 / 750 min</div></div></div><div class="card">'+rows+'</div></div>';
+}
+function vAlerts(){
+ var rem=ALERTS.filter(function(a){return S.dismissed.indexOf(a.id)<0}),gone=ALERTS.filter(function(a){return S.dismissed.indexOf(a.id)>=0});
+ var counts={All:rem.length,'Action Required':rem.filter(function(a){return a.bucket==='Action Required'}).length,Monitoring:rem.filter(function(a){return a.bucket==='Monitoring'}).length,Dismissed:gone.length};
+ var tab=t('al-tab','All');
+ var list=tab==='Dismissed'?gone:rem.filter(function(a){return tab==='All'||a.bucket===tab});
+ var cards='';list.forEach(function(a){cards+='<div class="card" style="padding:16px"><div style="display:flex;gap:12px;align-items:flex-start">'+itile(a.icon,HEX[a.status])+'<div style="flex:1"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div style="font-size:13px;font-weight:700">'+a.title+'</div>'+pill(a.status)+'</div><ul style="margin:8px 0 0 16px;font-size:12px;color:var(--slate)">'+a.bullets.map(function(b){return '<li style="margin-bottom:4px">'+b+'</li>'}).join('')+'</ul><div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-p" onclick="go(\''+a.goTo+'\')">'+a.primary+'</button><button class="btn" onclick="dismissAlert(\''+a.id+'\')">Dismiss</button></div></div></div></div>'});
+ return head('Action Center','Recommended actions based on your health data.',tabsHTML('al-tab',Object.keys(counts).map(function(k){return [k,k+' ('+counts[k]+')']})))+
+ '<div class="grid">'+cards+(list.length===0?'<div class="card" style="padding:32px;text-align:center;font-size:12px;color:var(--slate)">No alerts in this bucket.</div>':'')+'</div>';
+}
+function vMission(){
+ var phases=[['Launch & Ascent','Complete'],['Trans-Martian Injection','Complete'],['Cruise','Current'],['Mars Orbit Insertion','Upcoming'],['Surface Operations','Upcoming']];
+ var ph='';phases.forEach(function(p,i){var col=p[1]==='Complete'?'var(--green)':p[1]==='Current'?'var(--blue)':'var(--slate)';ph+='<div style="display:flex;align-items:center;gap:12px"><span style="width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;background:'+(p[1]==='Upcoming'?'var(--soft)':col)+';color:'+(p[1]==='Upcoming'?'var(--slate)':'#fff')+'">'+(i+1)+'</span><span style="flex:1;font-size:12px;font-weight:600">'+p[0]+'</span><span style="font-size:11px;font-weight:700;color:'+col+'">'+p[1]+'</span></div>'});
+ return '<div class="two" style="grid-template-columns:320px 1fr"><div class="card"><div class="mission-hero"><div class="mars-sphere"></div><div style="font-size:10px;letter-spacing:.14em;color:#ffffff99;text-transform:uppercase">Mission</div><div style="margin-top:4px;font-size:18px;font-weight:800">'+MISSION.name+'</div><div style="font-size:12px;color:#ffffffb3">Day '+MISSION.day+' of '+MISSION.total+'</div></div><div style="padding:20px" class="grid"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="display:inline-flex;gap:8px;align-items:center;color:var(--slate)">'+icon('globe',14)+' Distance from Earth</span><b>'+MISSION.distance+'</b></div><div style="display:flex;justify-content:space-between;font-size:12px"><span style="display:inline-flex;gap:8px;align-items:center;color:var(--slate)">'+icon('radio',14)+' Communication Delay</span><b>'+MISSION.delay+'</b></div><div style="display:flex;justify-content:space-between;font-size:12px"><span style="display:inline-flex;gap:8px;align-items:center;color:var(--slate)">'+icon('rocket',14)+' Mission Phase</span><b>'+MISSION.phase+'</b></div><div>'+bar(MISSION.progress)+'<div class="muted" style="text-align:right;margin-top:4px">'+MISSION.progress+'%</div></div></div></div>'+
+ '<div class="card" style="padding:20px"><div class="tile-label" style="margin-bottom:16px">Mission Timeline</div><div class="grid" style="gap:16px">'+ph+'</div></div></div>';
+}
+function vProfile(){
+ var tab=t('prof-tab','Profile'),body='';
+ if(tab==='Profile')body='<div class="card" style="padding:20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap"><span style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;display:grid;place-items:center;font-size:20px;font-weight:800">AC</span><div><div style="font-size:13px;font-weight:700">Alex Carter</div><div class="muted">Astronaut · ID AST-001</div><div class="muted">Mission: Mars Transit · Role: Crew Member</div></div></div>';
+ else if(tab==='Devices'){var r='';DEVICES.forEach(function(d){r+='<div class="rowline"><span style="display:inline-flex;gap:12px;align-items:center;font-weight:600">'+itile(d[1],'#1769E8',36)+d[0]+'</span><span style="display:inline-flex;gap:6px;align-items:center;font-size:11px;font-weight:700;color:var(--green)"><i style="width:6px;height:6px;border-radius:50%;background:var(--green)"></i>Connected</span></div>'});body='<div class="card">'+r+'</div>'}
+ else if(tab==='Preferences')body='<div class="card" style="padding:20px;font-size:12px"><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--soft)"><span>Alert notifications</span><b style="color:var(--green)">On</b></div><div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--soft)"><span>Daily wellness reminder</span><b style="color:var(--green)">On</b></div><div style="display:flex;justify-content:space-between;padding-top:10px"><span>Theme</span><b>Light (Habitat)</b></div></div>';
+ else body='<div class="card" style="padding:20px;font-size:12px;line-height:1.7;color:var(--slate)">All physiological signals are synthetic demo data. In production, health records are stored under medical-domain access control; crew members may export or purge personal data at any time.</div>';
+ return head('Profile & Settings','',tabsHTML('prof-tab',['Profile','Devices','Preferences','Data & Privacy']))+body;
+}
