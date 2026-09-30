@@ -1,129 +1,143 @@
-// js/shell.js — Navigation Sidebar & Topbar Shell for STAR PLUS 1.2
+// js/shell.js — Navigation Shell (Header Bar, Tabs & Sidebar) for STAR PLUS 1.2
 
 (function() {
   window.renderShell = function(contentHtml) {
-    var role = S.role;
-    var view = S.view;
+    var role = S.role || 'astronaut';
+    var view = S.view || 'overview';
     var activeCrew = (typeof window.getCrewData === 'function') ? window.getCrewData(S.crewId) : { name: 'Alex Carter', sid: 'AST-001', avatar: 'AC', role: 'Commander' };
 
-    var navItems = [];
-    if (role === 'astronaut') {
-      navItems = [
-        { id: 'overview', label: 'Overview', icon: 'overview' },
-        { id: 'systems', label: 'Health Systems', icon: 'systems' },
-        { id: 'vitals', label: 'Vital Signs', icon: 'vitals' },
-        { id: 'assessment', label: 'Assessments', icon: 'assessments' },
-        { id: 'wellness', label: 'Wellness Check', icon: 'wellness' },
-        { id: 'radiation', label: 'Radiation', icon: 'radiation' },
-        { id: 'activity', label: 'Activity & Fitness', icon: 'activity' },
-        { id: 'alerts', label: 'Action Center', icon: 'alerts' },
-        { id: 'mission', label: 'Mission Info', icon: 'mission' },
-        { id: 'profile', label: 'Profile & Settings', icon: 'profile' }
-      ];
-    } else if (role === 'staff') {
-      var staffLabel = 'Crew Detail (' + (activeCrew ? activeCrew.name.split(' ')[1] || activeCrew.name : 'Crew') + ')';
-      navItems = [
-        { id: 'staff-overview', label: 'Crew Overview', icon: 'crew' },
-        { id: 'crew-detail', label: staffLabel, icon: 'profile' },
-        { id: 'systems', label: 'System Analytics', icon: 'systems' },
-        { id: 'alerts', label: 'Medical Alerts', icon: 'alerts' },
-        { id: 'mission', label: 'Mission Status', icon: 'mission' },
-        { id: 'profile', label: 'Officer Settings', icon: 'settings' }
-      ];
-    } else if (role === 'control') {
-      navItems = [
-        { id: 'control-overview', label: 'Mission Overview', icon: 'control' },
-        { id: 'staff-overview', label: 'Crew Health Status', icon: 'crew' },
-        { id: 'radiation', label: 'Environment & Rad', icon: 'radiation' },
-        { id: 'mission', label: 'Mission Timeline', icon: 'mission' },
-        { id: 'alerts', label: 'System Alerts', icon: 'alerts' }
-      ];
-    }
+    // Primary Top Navigation Tabs matching the mockups
+    var topTabs = [
+      { id: 'overview', label: 'Home', icon: 'home', aliases: ['overview', 'home'] },
+      { id: 'systems', label: 'My Health', icon: 'health', aliases: ['systems', 'health', 'vitals'] },
+      { id: 'system-detail', label: '3D Body', icon: 'body', aliases: ['system-detail', 'body-explorer', '3d-body', 'body3d'] },
+      { id: 'mission', label: 'Missions', icon: 'rocket', aliases: ['mission', 'missions'] },
+      { id: 'learn', label: 'Learn', icon: 'book', aliases: ['learn'] },
+      { id: 'nasa-data', label: 'NASA Data', icon: 'orbit', aliases: ['nasa-data', 'nasadata'] }
+    ];
 
-    var sidebarNav = navItems.map(function(item) {
-      var active = (view === item.id || (item.id === 'systems' && view === 'system-detail')) ? 'on' : '';
-      return '<button class="navitem ' + active + '" onclick="S.set({view:\'' + item.id + '\'})">' +
-               window.icon(item.icon, 18) +
-               '<span>' + item.label + '</span>' +
+    // Build Top Navigation Tab Buttons
+    var topTabsHtml = topTabs.map(function(tab) {
+      var isActive = (tab.aliases.indexOf(view) !== -1);
+      var activeClass = isActive ? 'active' : '';
+      return '<button class="top-nav-tab ' + activeClass + '" onclick="S.set({view:\'' + tab.id + '\'})">' +
+               '<span class="tab-icon">' + window.icon(tab.icon, 16) + '</span>' +
+               '<span class="tab-label">' + tab.label + '</span>' +
              '</button>';
     }).join('');
 
-    var roleTitle = role === 'astronaut' ? 'ASTRONAUT PORTAL' : (role === 'staff' ? 'FLIGHT SURGEON' : 'MISSION CONTROL');
-    var userBadge = role === 'astronaut' ? (activeCrew.name + ' • ' + activeCrew.sid) : (role === 'staff' ? 'Dr. Marina Santos' : 'Flight Director');
-    var roleShort = role === 'astronaut' ? activeCrew.role : (role === 'staff' ? 'Med Ops Lead' : 'HQ Comm');
-    var avatarLetters = role === 'astronaut' ? activeCrew.avatar : (role === 'staff' ? 'MS' : 'FD');
+    // Left Sidebar Navigation Items
+    var sidebarNavItems = [
+      { id: 'overview', label: 'Home', icon: 'home', aliases: ['overview', 'home'] },
+      { id: 'systems', label: 'My Health', icon: 'health', aliases: ['systems', 'health', 'vitals'] },
+      { id: 'system-detail', label: '3D Body', icon: 'body', aliases: ['system-detail', 'body-explorer', '3d-body', 'body3d'] },
+      { id: 'mission', label: 'Missions', icon: 'rocket', aliases: ['mission', 'missions'] },
+      { id: 'learn', label: 'Learn', icon: 'book', aliases: ['learn'] },
+      { id: 'nasa-data', label: 'NASA Data', icon: 'orbit', aliases: ['nasa-data', 'nasadata'] }
+    ];
 
-    // Crew switcher dropdown options
-    var crewOptions = (window.CREW || []).map(function(c) {
-      var sel = (c.id === S.crewId) ? 'selected' : '';
-      return '<option value="' + c.id + '" ' + sel + '>' + c.name + ' (' + c.sid + ' - ' + c.role + ')</option>';
+    var sidebarNavHtml = sidebarNavItems.map(function(item) {
+      var isActive = (item.aliases.indexOf(view) !== -1);
+      var activeClass = isActive ? 'active' : '';
+      return '<button class="side-nav-item ' + activeClass + '" onclick="S.set({view:\'' + item.id + '\'})">' +
+               '<span class="side-nav-icon">' + window.icon(item.icon, 18) + '</span>' +
+               '<span class="side-nav-text">' + item.label + '</span>' +
+             '</button>';
     }).join('');
 
-    var headerCrewSwitcher = '';
-    if (role === 'astronaut' || role === 'staff') {
-      headerCrewSwitcher = '<div class="header-crew-select-wrapper">' +
-                             '<label class="crew-select-label">' + window.icon('crew', 13) + ' Astronaut:</label>' +
-                             '<select class="header-crew-select" onchange="S.switchCrew(this.value)">' +
-                               crewOptions +
-                             '</select>' +
-                           '</div>';
-    }
+    // Mode Toggle (Simple Mode vs Pro Mode)
+    var isPro = (role === 'staff' || role === 'control');
+    var simpleActiveClass = !isPro ? 'active' : '';
+    var proActiveClass = isPro ? 'active' : '';
 
-    return '<div class="app">' +
-             '<!-- Sidebar -->' +
-             '<aside class="sidebar">' +
-               '<div class="side-logo" onclick="S.set({view:\'' + (role === 'astronaut' ? 'overview' : (role === 'staff' ? 'staff-overview' : 'control-overview')) + '\'})" style="cursor:pointer;">' +
-                 '<div class="logo-icon">' +
-                   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
+    var userBadgeName = activeCrew ? activeCrew.name : 'Alex Carter';
+    var userAvatar = activeCrew ? activeCrew.avatar : 'AC';
+
+    return '<div class="app-layout-container">' +
+             '<!-- Top Aerospace Header Bar -->' +
+             '<header class="main-header">' +
+               '<div class="header-left">' +
+                 '<div class="brand-group" onclick="S.set({view:\'overview\'})" style="cursor:pointer;" title="STAR PLUS Home">' +
+                   '<div class="brand-star">' + window.starLogo3D(34) + '</div>' +
+                   '<div class="brand-text-block">' +
+                     '<div class="brand-name">STAR <span class="brand-plus">PLUS</span></div>' +
+                     '<div class="brand-tagline">Space Health Monitoring for Everyone</div>' +
+                   '</div>' +
+                   '<div class="brand-nasa-logo">' + window.nasaLogo(32) + '</div>' +
                  '</div>' +
-                 '<div class="side-title">STAR <span>PLUS</span><span class="version-tag">v1.2</span></div>' +
                '</div>' +
-               '<nav>' +
-                 '<div class="navgroup">' + roleTitle + '</div>' +
-                 sidebarNav +
+
+               '<nav class="header-center-tabs">' +
+                 topTabsHtml +
                '</nav>' +
-               '<div class="side-foot">' +
-                 '<div class="telemetry-ping">' +
-                   '<span class="ping-dot"></span>' +
-                   '<span>TELEMETRY SYNCED</span>' +
+
+               '<div class="header-right">' +
+                 '<!-- Mode Switcher Pill -->' +
+                 '<div class="mode-switcher-pill">' +
+                   '<button class="mode-btn ' + simpleActiveClass + '" onclick="S.login(\'astronaut\')" title="Astronaut Simple Mode">Simple Mode</button>' +
+                   '<button class="mode-btn ' + proActiveClass + '" onclick="S.login(\'staff\')" title="Medical Officer & Flight Deck Pro Mode">Pro Mode</button>' +
                  '</div>' +
-                 '<button class="logout-mini-btn" onclick="S.logout()" title="Switch Portal / Logout">' +
-                   window.icon('x', 14) +
+
+                 '<!-- Notifications Bell -->' +
+                 '<button class="header-icon-btn" onclick="S.set({view:\'alerts\'})" title="Alerts & Notifications">' +
+                   window.icon('bell', 18) +
+                   '<span class="notification-badge-dot"></span>' +
                  '</button>' +
-               '</div>' +
-             '</aside>' +
-             '<!-- Main Content Area -->' +
-             '<main class="main">' +
-               '<!-- Topbar -->' +
-               '<header class="topbar">' +
-                 '<div class="left">' +
-                   '<div class="mission-meta">' +
-                     '<span class="mars-dot"></span>' +
-                     '<span>MARS TRANSIT</span>' +
+
+                 '<!-- Mission Day Widget -->' +
+                 '<div class="header-mission-widget" onclick="S.set({view:\'mission\'})" title="Mission Day Telemetry">' +
+                   '<div class="mission-widget-top">' +
+                     '<span class="mission-day-title">Mission Day 183</span>' +
+                     '<span class="mission-days-left">199 days remaining</span>' +
                    '</div>' +
-                   '<span class="divider-v"></span>' +
-                   '<span class="chip-sol">SOL 184 / 912</span>' +
-                   '<span class="meta-stats">Distance: <strong>128.4M km</strong> • Earth Delay: <strong>14m 22s</strong> • Link: <strong style="color:var(--emerald);">99.8%</strong></span>' +
+                   '<div class="mission-progress-track">' +
+                     '<div class="mission-progress-fill" style="width:50%;"></div>' +
+                   '</div>' +
                  '</div>' +
-                 '<div class="right">' +
-                   headerCrewSwitcher +
-                   '<div class="rolebadge">' +
-                     '<span class="role-avatar">' + avatarLetters + '</span>' +
-                     '<div class="role-details">' +
-                       '<span class="role-name">' + userBadge + '</span>' +
-                       '<span class="role-sub">' + roleShort + '</span>' +
-                     '</div>' +
-                   '</div>' +
-                   '<button class="iconbtn switch-role-btn" onclick="S.logout()">' +
-                     window.icon('profile', 14) + ' <span>Switch Role</span>' +
+
+                 '<!-- Profile Avatar -->' +
+                 '<div class="header-profile-avatar" onclick="S.set({view:\'profile\'})" title="' + userBadgeName + ' (Click for Profile/Role)">' +
+                   '<span class="avatar-initials">' + userAvatar + '</span>' +
+                   '<span class="avatar-online-dot"></span>' +
+                 '</div>' +
+               '</div>' +
+             '</header>' +
+
+             '<!-- Main App Layout (Sidebar + Content Viewport) -->' +
+             '<div class="app-body-layout">' +
+               '<!-- Left Sidebar Navigation -->' +
+               '<aside class="app-sidebar">' +
+                 '<div class="sidebar-nav-list">' +
+                   sidebarNavHtml +
+                   '<div class="sidebar-divider"></div>' +
+                   '<button class="side-nav-item ' + (view === 'profile' ? 'active' : '') + '" onclick="S.set({view:\'profile\'})">' +
+                     '<span class="side-nav-icon">' + window.icon('settings', 18) + '</span>' +
+                     '<span class="side-nav-text">Settings</span>' +
+                   '</button>' +
+                   '<button class="side-nav-item ' + (view === 'learn' ? 'active' : '') + '" onclick="S.set({view:\'learn\'})">' +
+                     '<span class="side-nav-icon">' + window.icon('help', 18) + '</span>' +
+                     '<span class="side-nav-text">Help</span>' +
                    '</button>' +
                  '</div>' +
-               '</header>' +
-               '<!-- Page View Content -->' +
-               '<div class="content">' +
+
+                 '<!-- Sidebar Footer Status -->' +
+                 '<div class="sidebar-bottom-status">' +
+                   '<div class="connection-status-pill">' +
+                     '<span class="pulse-green-dot"></span>' +
+                     '<span class="connection-text">Connection Online</span>' +
+                     '<span class="signal-bars">' +
+                       '<span class="bar b1"></span><span class="bar b2"></span><span class="bar b3"></span><span class="bar b4"></span>' +
+                     '</span>' +
+                   '</div>' +
+                   '<div class="sidebar-motto-quote">“A healthier tomorrow for further missions.”</div>' +
+                 '</div>' +
+               '</aside>' +
+
+               '<!-- Main Scrollable Content Area -->' +
+               '<main class="app-main-content">' +
                  contentHtml +
-               '</div>' +
-             '</main>' +
+               '</main>' +
+             '</div>' +
            '</div>';
   };
 })();
