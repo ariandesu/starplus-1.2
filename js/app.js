@@ -65,15 +65,7 @@
 
     var view = S.view;
 
-    if (view === 'overview') {
-      var bodyElem = document.getElementById('body-3d-canvas');
-      if (bodyElem) {
-        window.ThreeViewerManager.create('body-3d-canvas', 'models/organs/realistic_human_skeleton.glb', {
-          autoRotate: true,
-          cameraPos: [0, 0, 3.5]
-        });
-      }
-    } else if (view === 'systems') {
+    if (view === 'systems') {
       var organModels = {
         'mini-3d-cardiovascular': 'models/organs/VH_M_Heart.glb',
         'mini-3d-respiratory': 'models/organs/VH_M_Lung.glb',

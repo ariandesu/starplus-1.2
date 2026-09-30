@@ -64,16 +64,18 @@
              '</div>' +
 
              '<div class="ov-grid">' +
-               '<!-- 3D Body Model Card -->' +
+               '<!-- Full Body Telemetry Image Card -->' +
                '<div class="card">' +
                  '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
                    '<div>' +
                      '<div style="font-size:16px; font-weight:700;">Full Body Telemetry</div>' +
-                     '<div class="muted">Interactive 3D Anatomical Scan</div>' +
+                     '<div class="muted">High-Resolution Anatomical Scan</div>' +
                    '</div>' +
                    window.pill('stable', 'ALL SYSTEMS NOMINAL') +
                  '</div>' +
-                 '<div id="body-3d-canvas" class="canvas-3d-wrapper" style="height:340px; background:#F8FAFC; border-radius:12px; border:1px solid #E2E8F0;"></div>' +
+                 '<div class="body-telemetry-img-wrapper" style="height:340px; background:#FFFFFF; border-radius:12px; border:1px solid #E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">' +
+                   '<img src="assets/images/full_body_telemetry.png" alt="Full Body Anatomical Telemetry" style="max-height:96%; max-width:96%; object-fit:contain; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.06));" />' +
+                 '</div>' +
                  '<div style="margin-top:14px; padding-top:12px; border-top:1px solid #E2E8F0;">' +
                    '<div style="font-size:11px; font-weight:700; color:#64748B; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Inspect Organ Systems in 3D:</div>' +
                    '<div style="display:flex; flex-wrap:wrap; gap:6px;">' +
