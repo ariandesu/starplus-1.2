@@ -73,8 +73,8 @@
                    '</div>' +
                    window.pill('stable', 'ALL SYSTEMS NOMINAL') +
                  '</div>' +
-                 '<div class="body-telemetry-img-wrapper" style="height:340px; background:#FFFFFF; border-radius:12px; border:1px solid #E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">' +
-                   '<img src="assets/images/full_body_telemetry.png" alt="Full Body Anatomical Telemetry" style="max-height:96%; max-width:96%; object-fit:contain; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.06));" />' +
+                 '<div class="body-telemetry-img-wrapper" style="height:520px; min-height:500px; background:radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 100%); border-radius:14px; border:1px solid #E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; box-shadow:inset 0 1px 3px rgba(0,0,0,0.03);">' +
+                   '<img src="assets/images/full_body_telemetry.png" alt="Full Body Anatomical Telemetry" style="max-height:98%; max-width:98%; height:auto; width:auto; object-fit:contain; filter:drop-shadow(0 8px 24px rgba(0,0,0,0.09)); transition:transform 0.3s ease;" />' +
                  '</div>' +
                  '<div style="margin-top:14px; padding-top:12px; border-top:1px solid #E2E8F0;">' +
                    '<div style="font-size:11px; font-weight:700; color:#64748B; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Inspect Organ Systems in 3D:</div>' +
