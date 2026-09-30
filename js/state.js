@@ -57,11 +57,14 @@
     // Role-based Navigation
     login: function(role) {
       this.role = role;
-      if (role === 'staff') {
+      if (role === 'staff' || role === 'surgeon') {
+        this.role = 'staff';
         this.view = 'staff-overview';
-      } else if (role === 'control') {
+      } else if (role === 'control' || role === 'mission_control') {
+        this.role = 'control';
         this.view = 'control-overview';
       } else {
+        this.role = 'astronaut';
         this.view = 'overview';
       }
       this.notify();
@@ -93,13 +96,31 @@
     },
 
     submitAssessment: function() {
-      alert('Cardiovascular assessment report submitted to Flight Surgeon.');
+      if (window.toast) {
+        window.toast('Cardiovascular assessment report submitted to Flight Surgeon.');
+      }
       this.view = 'overview';
       this.step = 0;
       this.notify();
     },
 
+    submitWellness: function() {
+      if (window.toast) {
+        window.toast('Daily wellness check-in logged successfully.');
+      }
+      this.view = 'overview';
+      this.notify();
+    },
+
+    showToast: function(msg, type) {
+      if (window.toast) window.toast(msg, type);
+    },
+
     // Wellness Flow
+    setMood: function(idx) {
+      this.set({ mood: idx });
+    },
+
     setSlider: function(id, val) {
       if (!this.sliders) this.sliders = {};
       this.sliders[id] = Number(val);
@@ -132,7 +153,6 @@
   window.setMood = function(i) { window.S.set({ mood: i }); };
   window.slideVal = function(id, v) { window.S.setSlider(id, v); };
   window.submitWellness = function() {
-    alert('Daily wellness check-in logged.');
-    window.S.set({ view: 'overview' });
+    window.S.submitWellness();
   };
 })();

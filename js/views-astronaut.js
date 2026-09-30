@@ -73,8 +73,8 @@
                    '</div>' +
                    window.pill('stable', 'ALL SYSTEMS NOMINAL') +
                  '</div>' +
-                 '<div class="body-telemetry-img-wrapper" style="height:520px; min-height:500px; background:radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 100%); border-radius:14px; border:1px solid #E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; box-shadow:inset 0 1px 3px rgba(0,0,0,0.03);">' +
-                   '<img src="assets/images/full_body_telemetry.png" alt="Full Body Anatomical Telemetry" style="max-height:98%; max-width:98%; height:auto; width:auto; object-fit:contain; filter:drop-shadow(0 8px 24px rgba(0,0,0,0.09)); transition:transform 0.3s ease;" />' +
+                 '<div class="body-telemetry-img-wrapper" style="height:580px; min-height:560px; background:radial-gradient(circle at center, #FFFFFF 0%, #F1F5F9 100%); border-radius:14px; border:1px solid #E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; box-shadow:inset 0 1px 4px rgba(0,0,0,0.03);">' +
+                   '<img src="assets/images/full_body_telemetry.png" alt="Full Body Anatomical Telemetry" style="max-height:98%; max-width:98%; height:auto; width:auto; object-fit:contain; filter:drop-shadow(0 10px 28px rgba(0,0,0,0.12)); transition:transform 0.3s ease;" />' +
                  '</div>' +
                  '<div style="margin-top:14px; padding-top:12px; border-top:1px solid #E2E8F0;">' +
                    '<div style="font-size:11px; font-weight:700; color:#64748B; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Inspect Organ Systems in 3D:</div>' +
@@ -144,7 +144,7 @@
                           '</div>' +
                           '<div style="font-size:16px; font-weight:700; color:#0F172A;">' + sys.name + '</div>' +
                           '<div class="muted" style="margin-top:2px;">' + sys.metrics + '</div>' +
-                          '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; pt:10px; border-top:1px solid #E2E8F0;">' +
+                          '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:10px; border-top:1px solid #E2E8F0;">' +
                             '<span style="font-size:11px; font-weight:700; color:#1769E8;">VIEW TELEMETRY &rarr;</span>' +
                             '<span style="font-size:11px; color:#94A3B8;">Updated 2m ago</span>' +
                           '</div>' +
@@ -382,64 +382,64 @@
                  '</div>' +
                  window.meterBar(step + 1, 4, '#1769E8') +
                  '<div style="margin-top:24px;">' + bodyContent + '</div>' +
-                 '<div style="display:flex; justify-content:space-between; margin-top:32px; pt:16px; border-top:1px solid #E2E8F0;">' +
+                 '<div style="display:flex; justify-content:space-between; margin-top:32px; padding-top:16px; border-top:1px solid #E2E8F0;">' +
                    '<button class="btn" ' + (step===0?'disabled style="opacity:0.5;"':'onclick="S.stepBack()"') + '>&larr; Previous</button>' +
                    (step < 3 ?
                      '<button class="btn btn-p" onclick="S.stepNext()">Continue &rarr;</button>' :
                      '<button class="btn btn-green" onclick="S.submitAssessment()">Submit to Flight Surgeon ✓</button>') +
                  '</div>' +
-               '</div>' +
-             '</div>';
-    },
-
-    // Screen 07: Daily Wellness Check-in
-    wellness: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Daily Wellness Check-in</h2>' +
-                 '<p>Subjective wellbeing, mood, and cognitive readiness report</p>' +
-               '</div>' +
-             '</div>' +
-
-             '<div style="max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">' +
-               '<div class="card">' +
-                 '<div style="font-size:15px; font-weight:700; margin-bottom:14px;">How are you feeling today?</div>' +
-                 '<div class="moodrow">' +
-                   MOODS.map(function(m, idx) {
-                     var sel = S.mood === idx ? 'on' : '';
-                     return '<button class="mood ' + sel + '" onclick="S.set({mood:' + idx + '})">' +
-                              '<span style="font-size:28px;">' + m.icon + '</span>' +
-                              '<span style="font-size:12px; font-weight:600;">' + m.label + '</span>' +
-                            '</button>';
-                   }).join('') +
                  '</div>' +
-               '</div>' +
+                 '</div>';
+                 },
 
-               '<div class="card">' +
-                 '<div style="font-size:15px; font-weight:700; margin-bottom:16px;">Subjective Indicators</div>' +
-                 '<div style="display:flex; flex-direction:column; gap:20px;">' +
-                   SLIDERS.map(function(sl) {
-                     var val = S.sliders ? (S.sliders[sl.id] || 50) : 50;
-                     return '<div class="sliderrow">' +
-                              '<span style="font-size:13px; font-weight:600;">' + sl.label + '</span>' +
-                              '<input type="range" min="0" max="100" value="' + val + '" oninput="S.setSlider(\'' + sl.id + '\', this.value)">' +
-                              '<span style="text-align:right; font-weight:700; color:#1769E8;">' + val + '%</span>' +
-                            '</div>';
-                   }).join('') +
-                 '</div>' +
-               '</div>' +
-
-               '<div class="note-banner">' +
-                 '<span style="font-size:20px;">💡</span>' +
+                 // Screen 07: Daily Wellness Check-in
+                 wellness: function() {
+                 return '<div class="head">' +
                  '<div>' +
-                   '<strong>System Notice:</strong> Your sleep score shows a 12% drop compared to baseline. Recommend 20min relaxation protocol before sleep cycle.' +
+                  '<h2>Daily Wellness Check-in</h2>' +
+                  '<p>Subjective wellbeing, mood, and cognitive readiness report</p>' +
                  '</div>' +
-               '</div>' +
+                 '</div>' +
 
-               '<div style="text-align:right;">' +
-                 '<button class="btn btn-p" style="padding:10px 24px;" onclick="alert(\'Wellness check-in logged successfully!\'); S.set({view:\'overview\'});">Submit Daily Log</button>' +
-               '</div>' +
-             '</div>';
+                 '<div style="max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">' +
+                 '<div class="card">' +
+                  '<div style="font-size:15px; font-weight:700; margin-bottom:14px;">How are you feeling today?</div>' +
+                  '<div class="moodrow">' +
+                    MOODS.map(function(m, idx) {
+                      var sel = S.mood === idx ? 'on' : '';
+                      return '<button class="mood ' + sel + '" onclick="S.set({mood:' + idx + '})">' +
+                               '<span style="font-size:28px;">' + m.icon + '</span>' +
+                               '<span style="font-size:12px; font-weight:600;">' + m.label + '</span>' +
+                             '</button>';
+                    }).join('') +
+                  '</div>' +
+                 '</div>' +
+
+                 '<div class="card">' +
+                  '<div style="font-size:15px; font-weight:700; margin-bottom:16px;">Subjective Indicators</div>' +
+                  '<div style="display:flex; flex-direction:column; gap:20px;">' +
+                    SLIDERS.map(function(sl) {
+                      var val = S.sliders ? (S.sliders[sl.id] || 50) : 50;
+                      return '<div class="sliderrow">' +
+                               '<span style="font-size:13px; font-weight:600;">' + sl.label + '</span>' +
+                               '<input type="range" min="0" max="100" value="' + val + '" oninput="S.setSlider(\'' + sl.id + '\', this.value)">' +
+                               '<span style="text-align:right; font-weight:700; color:#1769E8;">' + val + '%</span>' +
+                             '</div>';
+                    }).join('') +
+                  '</div>' +
+                 '</div>' +
+
+                 '<div class="note-banner">' +
+                  '<span style="font-size:20px;">💡</span>' +
+                  '<div>' +
+                    '<strong>System Notice:</strong> Your sleep score shows a 12% drop compared to baseline. Recommend 20min relaxation protocol before sleep cycle.' +
+                  '</div>' +
+                 '</div>' +
+
+                 '<div style="text-align:right;">' +
+                  '<button class="btn btn-p" style="padding:10px 24px;" onclick="S.submitWellness()">Submit Daily Log ✓</button>' +
+                 '</div>' +
+                 '</div>';
     },
 
     // Screen 08: Space Radiation

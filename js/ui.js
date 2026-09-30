@@ -71,11 +71,35 @@
                  '<div style="font-size:12px; color:#64748B; margin-top:2px;">' + crewMember.role + ' • ' + crewMember.id + '</div>' +
                '</div>' +
              '</div>' +
-             '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:16px; pt:12px; border-top:1px solid #E2E8F0; text-align:center;">' +
+             '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:16px; padding-top:12px; border-top:1px solid #E2E8F0; text-align:center;">' +
                '<div><div class="tile-label">HR</div><div style="font-size:14px; font-weight:700;">' + crewMember.hr + '</div></div>' +
                '<div><div class="tile-label">BP</div><div style="font-size:14px; font-weight:700;">' + crewMember.bp + '</div></div>' +
                '<div><div class="tile-label">SpO₂</div><div style="font-size:14px; font-weight:700;">' + crewMember.spo2 + '</div></div>' +
              '</div>' +
-           '</div>';
-  };
-})();
+             '</div>';
+             };
+
+             // Apple-grade Non-blocking Toast Notification
+             window.toast = function(msg, type) {
+             var container = document.getElementById('toast-container');
+             if (!container) {
+             container = document.createElement('div');
+             container.id = 'toast-container';
+             container.className = 'toast-container';
+             document.body.appendChild(container);
+             }
+
+             var t = document.createElement('div');
+             t.className = 'toast toast-' + (type || 'success');
+             var icon = type === 'warning' ? '⚠️' : (type === 'info' ? 'ℹ️' : '✓');
+             t.innerHTML = '<span style="font-size:15px; font-weight:700;">' + icon + '</span><span>' + msg + '</span>';
+             container.appendChild(t);
+
+             setTimeout(function() {
+             t.classList.add('toast-out');
+             setTimeout(function() {
+             if (t.parentNode) t.parentNode.removeChild(t);
+             }, 250);
+             }, 3200);
+             };
+             })();

@@ -21,13 +21,25 @@
 
     // Determine content HTML for active view
     var contentHtml = '';
-    if (view === 'overview') {
+    var sysMap = {
+      'cardiovascular': 'cardiovascular',
+      'respiratory': 'respiratory',
+      'neurological': 'neurological',
+      'musculoskeletal': 'musculoskeletal',
+      'immune': 'immune',
+      'behavioral': 'behavioral'
+    };
+
+    if (sysMap[view]) {
+      S.sys = sysMap[view];
+      contentHtml = window.AstronautViews.systemDetail();
+    } else if (view === 'overview') {
       contentHtml = window.AstronautViews.overview();
     } else if (view === 'systems') {
       contentHtml = window.AstronautViews.systems();
     } else if (view === 'system-detail') {
       contentHtml = window.AstronautViews.systemDetail();
-    } else if (view === 'vitals') {
+    } else if (view === 'vitals' || view === 'telemetry') {
       contentHtml = window.AstronautViews.vitals();
     } else if (view === 'assessment') {
       contentHtml = window.AstronautViews.assessment();
@@ -35,7 +47,7 @@
       contentHtml = window.AstronautViews.wellness();
     } else if (view === 'radiation') {
       contentHtml = window.AstronautViews.radiation();
-    } else if (view === 'activity') {
+    } else if (view === 'activity' || view === 'trends') {
       contentHtml = window.AstronautViews.activity();
     } else if (view === 'alerts') {
       contentHtml = window.AstronautViews.alerts();
