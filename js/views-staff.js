@@ -161,4 +161,7 @@
              '</div>';
     }
   };
+
+  window.V = window.V || {};
+  Object.assign(window.V, window.StaffViews);
 })();

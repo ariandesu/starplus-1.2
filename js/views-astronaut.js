@@ -1,619 +1,777 @@
-// js/views-astronaut.js — Astronaut Role Views & Login Screen for STAR PLUS 1.2
+// js/views-astronaut.js — Complete Astronaut Section Views for STAR PLUS 1.2
 
 (function() {
-  window.AstronautViews = {
-    
-    // Screen 01: Login / Role Selection
-    login: function() {
-      return '<div class="login">' +
-               '<div class="nasa-logo-top">NASA</div>' +
-               '<div class="login-inner">' +
-                 '<div class="login-title-box">' +
-                   '<h1>STAR <span>PLUS</span> v1.2</h1>' +
-                   '<div class="tag">Astronaut Health &amp; Mission Readiness System</div>' +
-                   '<div class="sub">Deep Space Health Monitoring Platform • Mars Transit Mission</div>' +
+  window.V = window.V || {};
+  window.AstronautViews = window.AstronautViews || {};
+
+  // Helper: Render Crew Switcher Bar
+  function renderCrewBar(activeId) {
+    var crewList = window.CREW || [];
+    var cards = crewList.map(function(c) {
+      var active = (c.id === activeId) ? 'active' : '';
+      var statusClass = c.status === 'stable' ? 'color:var(--emerald);' : (c.status === 'attention' ? 'color:var(--amber);' : 'color:var(--azure);');
+      return '<div class="crew-quick-card ' + active + '" onclick="S.switchCrew(\'' + c.id + '\')">' +
+               '<div class="crew-card-avatar">' + c.avatar + '</div>' +
+               '<div class="crew-card-info">' +
+                 '<div class="crew-card-name">' + c.name + ' <span style="font-size:10px; opacity:0.75;">(' + c.sid + ')</span></div>' +
+                 '<div class="crew-card-sub">' +
+                   '<span>' + c.role + '</span>' +
+                   '<span style="' + statusClass + '">• ' + (c.status === 'stable' ? 'Nominal' : 'Attention') + '</span>' +
                  '</div>' +
-                 '<div class="roles">' +
-                   '<div class="rolecard" onclick="S.login(\'astronaut\')">' +
-                     '<div class="role-ic">' + window.icon('profile', 28) + '</div>' +
-                     '<h3>Astronaut Portal</h3>' +
-                     '<p>Personal vitals, health system status, daily check-ins &amp; exercise logs.</p>' +
-                     '<button class="btn btn-p" style="margin-top:20px; width:100%;">Enter as Astronaut</button>' +
-                   '</div>' +
-                   '<div class="rolecard" onclick="S.login(\'staff\')">' +
-                     '<div class="role-ic">' + window.icon('crew', 28) + '</div>' +
-                     '<h3>Flight Surgeon</h3>' +
-                     '<p>Crew health overview, medical diagnostics, triage alerts &amp; clinical logs.</p>' +
-                     '<button class="btn btn-p" style="margin-top:20px; width:100%;">Enter as Flight Surgeon</button>' +
-                   '</div>' +
-                   '<div class="rolecard" onclick="S.login(\'control\')">' +
-                     '<div class="role-ic">' + window.icon('control', 28) + '</div>' +
-                     '<h3>Mission Control</h3>' +
-                     '<p>Telemetry summary, environmental status, radiation monitoring &amp; mission readiness.</p>' +
-                     '<button class="btn btn-p" style="margin-top:20px; width:100%;">Enter as Mission Control</button>' +
-                   '</div>' +
-                 '</div>' +
-                 '<div class="login-footer-row">' +
-                   '<span>Demo Environment • Synthetic Telemetry Data</span>' +
-                   '<span>NASA Human Research Program • Version 1.2.0</span>' +
-                 '</div>' +
+               '</div>' +
+               '<div class="crew-card-readiness" style="background:var(--primary-light); color:var(--primary);">' +
+                 c.readiness + '%' +
                '</div>' +
              '</div>';
-    },
+    }).join('');
 
-    // Screen 02: Astronaut Overview
-    overview: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Astronaut Health Overview</h2>' +
-                 '<p>Personal readiness status, active telemetry and body scan</p>' +
+    return '<div class="crew-quick-bar">' + cards + '</div>';
+  }
+
+  // Helper: Render Date Range Selector
+  function renderRangeTabs(activeRange) {
+    var ranges = ['1D', '7D', '30D', 'Live'];
+    var tabs = ranges.map(function(r) {
+      var active = (r === activeRange) ? 'active' : '';
+      return '<button class="range-tab-btn ' + active + '" onclick="S.setRange(\'' + r + '\')">' + r + '</button>';
+    }).join('');
+
+    return '<div class="range-tabs-row">' +
+             '<div class="range-tabs-group">' + tabs + '</div>' +
+             '<div class="custom-date-filter-box">' +
+               '<span style="font-size:11px; font-weight:700; color:var(--text-secondary);">' + window.icon('calendar', 12) + ' Range:</span>' +
+               '<input type="date" class="custom-date-input" id="date-from" value="2026-09-24">' +
+               '<span style="font-size:11px; color:var(--text-secondary);">to</span>' +
+               '<input type="date" class="custom-date-input" id="date-to" value="2026-09-30">' +
+               '<button class="date-apply-btn" onclick="S.setRange(\'7D\')">Apply</button>' +
+             '</div>' +
+           '</div>';
+  }
+
+  // 0. LOGIN PORTAL VIEW
+  var loginView = function() {
+    return '<div class="login-wrapper animate-fade-in" style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#F8FAFC; padding:24px;">' +
+             '<div style="text-align:center; max-width:540px; margin-bottom:32px;">' +
+               '<div style="display:inline-flex; align-items:center; gap:10px; background:#EFF6FF; border:1px solid #BFDBFE; padding:6px 14px; border-radius:999px; margin-bottom:14px;">' +
+                 '<span style="font-size:14px;">🚀</span>' +
+                 '<span style="font-size:12px; font-weight:800; color:#1D4ED8; letter-spacing:0.05em;">STAR+ MISSION CONTROL • ARES V</span>' +
                '</div>' +
-               '<div class="tabs">' +
-                 '<button class="tab ' + (S.range==='1D'?'on':'') + '" onclick="S.set({range:\'1D\'})">1D</button>' +
-                 '<button class="tab ' + (S.range==='7D'?'on':'') + '" onclick="S.set({range:\'7D\'})">7D</button>' +
-                 '<button class="tab ' + (S.range==='30D'?'on':'') + '" onclick="S.set({range:\'30D\'})">30D</button>' +
+               '<h1 style="font-size:32px; font-weight:900; color:#0F172A; letter-spacing:-0.03em; margin-bottom:8px;">Deep Space Health Telemetry</h1>' +
+               '<p style="font-size:14px; color:#64748B;">Select your operational role portal to access real-time biometrics, 3D anatomical models, and clinical mission controls.</p>' +
+             '</div>' +
+             '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px; width:100%; max-width:880px;">' +
+               '<!-- Astronaut Role -->' +
+               '<div class="card" onclick="S.login(\'astronaut\')" style="padding:24px; cursor:pointer; text-align:center; transition:all 0.2s ease; border:2px solid transparent;" onmouseover="this.style.borderColor=\'#0071E3\'; this.style.transform=\'translateY(-4px)\'" onmouseout="this.style.borderColor=\'transparent\'; this.style.transform=\'none\'">' +
+                 '<div style="font-size:42px; margin-bottom:12px;">👨🚀</div>' +
+                 '<h3 style="font-size:18px; font-weight:800; color:#0F172A; margin-bottom:6px;">Astronaut Portal</h3>' +
+                 '<p style="font-size:12px; color:#64748B; margin-bottom:16px;">Personal 3D organ telemetry, continuous vitals, daily wellness checks &amp; countermeasures.</p>' +
+                 '<button class="btn btn-primary" style="width:100%;">Enter Astronaut Portal →</button>' +
+               '</div>' +
+               '<!-- Medical Officer Role -->' +
+               '<div class="card" onclick="S.login(\'staff\')" style="padding:24px; cursor:pointer; text-align:center; transition:all 0.2s ease; border:2px solid transparent;" onmouseover="this.style.borderColor=\'#10B981\'; this.style.transform=\'translateY(-4px)\'" onmouseout="this.style.borderColor=\'transparent\'; this.style.transform=\'none\'">' +
+                 '<div style="font-size:42px; margin-bottom:12px;">🩺</div>' +
+                 '<h3 style="font-size:18px; font-weight:800; color:#0F172A; margin-bottom:6px;">Flight Surgeon / Medical</h3>' +
+                 '<p style="font-size:12px; color:#64748B; margin-bottom:16px;">Fleet-wide 4-crew monitoring, multi-system diagnostics, dosimetry &amp; intervention alerts.</p>' +
+                 '<button class="btn" style="width:100%; background:#10B981; color:#fff;">Enter Medical Console →</button>' +
+               '</div>' +
+               '<!-- Mission Control Role -->' +
+               '<div class="card" onclick="S.login(\'control\')" style="padding:24px; cursor:pointer; text-align:center; transition:all 0.2s ease; border:2px solid transparent;" onmouseover="this.style.borderColor=\'#6366F1\'; this.style.transform=\'translateY(-4px)\'" onmouseout="this.style.borderColor=\'transparent\'; this.style.transform=\'none\'">' +
+                 '<div style="font-size:42px; margin-bottom:12px;">🛰️</div>' +
+                 '<h3 style="font-size:18px; font-weight:800; color:#0F172A; margin-bottom:6px;">Mission Control</h3>' +
+                 '<p style="font-size:12px; color:#64748B; margin-bottom:16px;">Interplanetary transit status, ECLSS environmental telemetry &amp; DSN comms latency.</p>' +
+                 '<button class="btn" style="width:100%; background:#6366F1; color:#fff;">Enter Flight Deck →</button>' +
                '</div>' +
              '</div>' +
-
-             '<!-- Stat Pills Row -->' +
-             '<div class="stat-pills-row">' +
-               window.statCard('Health Readiness Score', '87', '/100', 'overview', '#EAF3FF', '#1769E8') +
-               window.statCard('Active Telemetry Alerts', '2', '', 'alerts', '#FEF6E9', '#F5A623') +
-               window.statCard('Days in Transit', '184', 'SOLS', 'mission', '#E8F8F2', '#16B978') +
-               window.statCard('Next Assessment In', '3', 'DAYS', 'assessments', '#F1EDFD', '#7657E8') +
-             '</div>' +
-
-             '<div class="ov-grid">' +
-               '<!-- Full Body Telemetry Image Card -->' +
-               '<div class="card">' +
-                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
-                   '<div>' +
-                     '<div style="font-size:16px; font-weight:700;">Full Body Telemetry</div>' +
-                     '<div class="muted">High-Resolution Anatomical Scan</div>' +
-                   '</div>' +
-                   window.pill('stable', 'ALL SYSTEMS NOMINAL') +
-                 '</div>' +
-                 '<div class="body-telemetry-img-wrapper" style="height:580px; min-height:560px; background:radial-gradient(circle at center, #FFFFFF 0%, #F1F5F9 100%); border-radius:14px; border:1px solid #E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; box-shadow:inset 0 1px 4px rgba(0,0,0,0.03);">' +
-                   '<img src="assets/images/full_body_telemetry.png" alt="Full Body Anatomical Telemetry" style="max-height:98%; max-width:98%; height:auto; width:auto; object-fit:contain; filter:drop-shadow(0 10px 28px rgba(0,0,0,0.12)); transition:transform 0.3s ease;" />' +
-                 '</div>' +
-                 '<div style="margin-top:14px; padding-top:12px; border-top:1px solid #E2E8F0;">' +
-                   '<div style="font-size:11px; font-weight:700; color:#64748B; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Inspect Organ Systems in 3D:</div>' +
-                   '<div style="display:flex; flex-wrap:wrap; gap:6px;">' +
-                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'cardiovascular\')">🫀 Heart</button>' +
-                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'respiratory\')">🫁 Lungs</button>' +
-                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'neurological\')">🧠 Brain</button>' +
-                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'musculoskeletal\')">🦴 Skeleton</button>' +
-                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'immune\')">🛡️ Endocrine</button>' +
-                     '<button class="btn" style="font-size:12px; padding:4px 10px;" onclick="S.openSys(\'behavioral\')">🛌 Sleep Pod</button>' +
-                   '</div>' +
-                 '</div>' +
-               '</div>' +
-
-               '<!-- Right Stack: Health Changes & Quick Actions -->' +
-               '<div style="display:flex; flex-direction:column; gap:20px;">' +
-                 '<div class="card">' +
-                   '<div style="font-size:15px; font-weight:700; margin-bottom:14px;">Recent Health Changes</div>' +
-                   CHANGES.map(function(c) {
-                     var iconName = c.dir === 'up' ? 'arrowup' : (c.dir === 'down' ? 'arrowdown' : 'minus');
-                     var iconColor = c.dir === 'up' ? '#16B978' : (c.dir === 'down' ? '#E94B5F' : '#64748B');
-                     return '<div class="rowline">' +
-                              '<div style="display:flex; align-items:center; gap:8px;">' +
-                                '<span style="color:' + iconColor + ';">' + window.icon(iconName, 14) + '</span>' +
-                                '<span style="font-weight:600;">' + c.name + '</span>' +
-                              '</div>' +
-                              '<span class="muted">' + c.delta + ' (' + c.val + ')</span>' +
-                            '</div>';
-                   }).join('') +
-                 '</div>' +
-
-                 '<div class="card">' +
-                   '<div style="font-size:15px; font-weight:700; margin-bottom:12px;">Quick Actions</div>' +
-                   '<div style="display:flex; flex-direction:column; gap:8px;">' +
-                     '<button class="btn btn-p" onclick="S.set({view:\'assessment\', step:0})" style="justify-content:center;">' + window.icon('assessments', 16) + ' Start Cardiovascular Assessment</button>' +
-                     '<button class="btn" onclick="S.set({view:\'wellness\'})" style="justify-content:center;">' + window.icon('wellness', 16) + ' Daily Wellness Check-in</button>' +
-                     '<button class="btn" onclick="S.set({view:\'activity\'})" style="justify-content:center;">' + window.icon('activity', 16) + ' Log Workout Activity</button>' +
-                   '</div>' +
-                 '</div>' +
-               '</div>' +
-             '</div>' +
-
-             '<!-- Recent Alerts -->' +
-             '<div style="margin-top:24px;">' +
-               '<div style="font-size:16px; font-weight:700; margin-bottom:12px;">Active Medical Alerts</div>' +
-               ALERTS.slice(0, 2).map(window.alertRow).join('') +
-             '</div>';
-    },
-
-    // Screen 03: Health Systems Grid
-    systems: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Your Health Systems</h2>' +
-                 '<p>Real-time organ telemetry and systemic health analysis</p>' +
-               '</div>' +
-             '</div>' +
-
-             '<div class="sys-grid">' +
-               SYSTEMS.map(function(sys) {
-                 var pillHtml = window.pill(sys.status, sys.status.toUpperCase());
-                 var miniCanvasId = 'mini-3d-' + sys.id;
-                 return '<div class="card hover" onclick="S.set({view:\'system-detail\', sys:\'' + sys.id + '\'})">' +
-                          '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">' +
-                            '<div id="' + miniCanvasId + '" class="mini-3d-container"></div>' +
-                            pillHtml +
-                          '</div>' +
-                          '<div style="font-size:16px; font-weight:700; color:#0F172A;">' + sys.name + '</div>' +
-                          '<div class="muted" style="margin-top:2px;">' + sys.metrics + '</div>' +
-                          '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:10px; border-top:1px solid #E2E8F0;">' +
-                            '<span style="font-size:11px; font-weight:700; color:#1769E8;">VIEW TELEMETRY &rarr;</span>' +
-                            '<span style="font-size:11px; color:#94A3B8;">Updated 2m ago</span>' +
-                          '</div>' +
-                        '</div>';
-               }).join('') +
-             '</div>';
-    },
-
-    // Screen 04: System Detail View
-    systemDetail: function() {
-      var sysId = S.sys || 'cardiovascular';
-      var sysObj = SYSTEMS.find(function(s) { return s.id === sysId; }) || SYSTEMS[0];
-      var tab = S.subTab || 'overview';
-
-      var tabContentHtml = '';
-      if (tab === 'overview') {
-        var paramsHtml = (sysObj.parameters || []).map(function(p) {
-          var pStatus = p.status || 'Monitoring';
-          var pillStatus = pStatus.toLowerCase() === 'stable' ? 'stable' : (pStatus.toLowerCase() === 'attention' ? 'attention' : 'monitoring');
-          return '<div style="background:#F8FAFC; padding:12px; border-radius:10px; border:1px solid #E2E8F0;">' +
-                   '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-                     '<div class="tile-label">' + (p.label || '') + '</div>' +
-                     '<span style="font-size:10px; font-weight:700; color:#64748B;">' + (p.delta || '') + '</span>' +
-                   '</div>' +
-                   '<div class="value" style="font-size:20px; margin-top:4px;">' + (p.val !== undefined ? p.val : '--') + ' <span class="unit">' + (p.unit || '') + '</span></div>' +
-                   '<div style="margin-top:6px;">' + window.pill(pillStatus, pStatus.toUpperCase()) + '</div>' +
-                 '</div>';
-        }).join('');
-
-        tabContentHtml = 
-          '<div class="card" style="margin-bottom:20px;">' +
-            '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Key Telemetry Parameters</div>' +
-            '<div class="four" style="margin-bottom:0;">' + paramsHtml + '</div>' +
-          '</div>' +
-          '<div class="card">' +
-            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
-              '<div style="font-size:16px; font-weight:700;">' + (sysObj.chartTitle || '7-Day Trend Chart') + '</div>' +
-              '<div class="tabs">' +
-                '<button class="tab ' + (S.range==='1D'?'on':'') + '" onclick="S.set({range:\'1D\'})">1D</button>' +
-                '<button class="tab ' + (S.range==='7D'?'on':'') + '" onclick="S.set({range:\'7D\'})">7D</button>' +
-                '<button class="tab ' + (S.range==='30D'?'on':'') + '" onclick="S.set({range:\'30D\'})">30D</button>' +
-              '</div>' +
-            '</div>' +
-            window.areaChart(sysObj.chartData || [64, 68, 66, 72, 70, 68, 67], DAYS, '#1769E8', 460, 160) +
-          '</div>';
-      } else if (tab === 'trends') {
-        tabContentHtml = 
-          '<div class="card" style="margin-bottom:20px;">' +
-            '<div style="font-size:16px; font-weight:700; margin-bottom:12px;">Comparative Telemetry Streams</div>' +
-            window.multiLineChart([
-              { color: '#1769E8', data: sysObj.chartData || [64, 68, 66, 72, 70, 68, 67] },
-              { color: '#16B978', data: [98, 98, 97, 98, 98, 99, 98] },
-              { color: '#E94B5F', data: [118, 120, 124, 122, 119, 118, 117] }
-            ], DAYS, 460, 180) +
-            '<div style="display:flex; justify-content:center; gap:20px; margin-top:14px; font-size:12px; font-weight:600;">' +
-              '<span style="color:#1769E8;">● Primary Metric</span>' +
-              '<span style="color:#16B978;">● SpO₂ Compliance</span>' +
-              '<span style="color:#E94B5F;">● Systolic Baseline</span>' +
-            '</div>' +
-          '</div>' +
-          '<div class="card">' +
-            '<div style="font-size:15px; font-weight:700; margin-bottom:8px;">Sensor Sampling Quality</div>' +
-            '<div class="rowline"><span>Sampling Frequency</span><span style="font-weight:700;">100 Hz Real-Time</span></div>' +
-            '<div class="rowline"><span>Data Loss / Jitter</span><span style="font-weight:700; color:#16B978;">0.00% (Lossless)</span></div>' +
-            '<div class="rowline"><span>Packet Latency</span><span style="font-weight:700;">12 ms (Sub-second)</span></div>' +
-          '</div>';
-      } else if (tab === 'insights') {
-        tabContentHtml = 
-          '<div class="card">' +
-            '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">NASA HRP Clinical Insights</div>' +
-            (sysObj.insights || []).map(function(ins) {
-              return '<div style="background:#F8FAFC; padding:14px; border-radius:10px; border:1px solid #E2E8F0; margin-bottom:12px;">' +
-                       '<div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#0F172A; margin-bottom:6px;">' +
-                         '<span style="color:#1769E8;">' + window.icon('brain', 16) + '</span>' +
-                         ins.title +
-                       '</div>' +
-                       '<div style="font-size:13px; color:#475569; line-height:1.5;">' + ins.text + '</div>' +
-                     '</div>';
-            }).join('') +
-          '</div>';
-      } else if (tab === 'recommendations') {
-        tabContentHtml = 
-          '<div class="card">' +
-            '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Flight Surgeon Clinical Directives</div>' +
-            (sysObj.recommendations || []).map(function(rec, idx) {
-              return '<div class="rowline" style="align-items:flex-start;">' +
-                       '<div style="width:24px; height:24px; border-radius:50%; background:#EAF3FF; color:#1769E8; display:grid; place-items:center; font-weight:700; font-size:12px; flex-shrink:0;">' + (idx+1) + '</div>' +
-                       '<div style="font-size:13px; color:#334155; line-height:1.5;">' + rec + '</div>' +
-                     '</div>';
-            }).join('') +
-          '</div>';
-      }
-
-      return '<div class="head">' +
-               '<div>' +
-                 '<div style="display:flex; align-items:center; gap:12px;">' +
-                   '<button class="btn" onclick="S.set({view:\'systems\'})">&larr; Back to Systems</button>' +
-                   '<h2>' + sysObj.name + ' System</h2>' +
-                   window.pill(sysObj.status, sysObj.status.toUpperCase()) +
-                 '</div>' +
-                 '<p style="margin-top:6px;">' + sysObj.blurb + '</p>' +
-               '</div>' +
-               '<div class="tabs">' +
-                 '<button class="tab ' + (tab==='overview'?'on':'') + '" onclick="S.set({subTab:\'overview\'})">Overview</button>' +
-                 '<button class="tab ' + (tab==='trends'?'on':'') + '" onclick="S.set({subTab:\'trends\'})">Trends</button>' +
-                 '<button class="tab ' + (tab==='insights'?'on':'') + '" onclick="S.set({subTab:\'insights\'})">Insights</button>' +
-                 '<button class="tab ' + (tab==='recommendations'?'on':'') + '" onclick="S.set({subTab:\'recommendations\'})">Recommendations</button>' +
-               '</div>' +
-             '</div>' +
-
-             '<!-- Organ Quick Switcher -->' +
-             '<div class="card" style="margin-bottom:20px; padding:10px 14px;">' +
-               '<div style="display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:2px;">' +
-                 '<span style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; white-space:nowrap;">Quick Organ Switch:</span>' +
-                 '<button class="tab ' + (sysId==='cardiovascular'?'on':'') + '" onclick="S.openSys(\'cardiovascular\')">🫀 Heart</button>' +
-                 '<button class="tab ' + (sysId==='respiratory'?'on':'') + '" onclick="S.openSys(\'respiratory\')">🫁 Lungs</button>' +
-                 '<button class="tab ' + (sysId==='neurological'?'on':'') + '" onclick="S.openSys(\'neurological\')">🧠 Brain</button>' +
-                 '<button class="tab ' + (sysId==='musculoskeletal'?'on':'') + '" onclick="S.openSys(\'musculoskeletal\')">🦴 Skeleton</button>' +
-                 '<button class="tab ' + (sysId==='immune'?'on':'') + '" onclick="S.openSys(\'immune\')">🛡️ Endocrine</button>' +
-                 '<button class="tab ' + (sysId==='behavioral'?'on':'') + '" onclick="S.openSys(\'behavioral\')">🛌 Sleep Pod</button>' +
-                 '<button class="tab ' + (sysId==='radiation'?'on':'') + '" onclick="S.openSys(\'radiation\')">☢️ Radiation</button>' +
-                 '<button class="tab ' + (sysId==='environmental'?'on':'') + '" onclick="S.openSys(\'environmental\')">🌌 Hab Life</button>' +
-               '</div>' +
-             '</div>' +
-
-             '<div class="two">' +
-               '<!-- Left: 3D Organ Canvas -->' +
-               '<div class="card">' +
-                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
-                   '<div style="font-size:16px; font-weight:700;">3D ' + sysObj.name + ' Model</div>' +
-                   window.pill('stable', 'INTERACTIVE 3D') +
-                 '</div>' +
-                 '<div id="detail-3d-canvas" class="canvas-3d-wrapper" style="height:380px; background:#F8FAFC; border-radius:12px; border:1px solid #E2E8F0;"></div>' +
-                 '<div style="text-align:center; margin-top:12px;" class="muted">Drag to rotate 360° • Scroll to zoom • Studio WebGL lighting</div>' +
-               '</div>' +
-
-               '<!-- Right Stack: Tab Dependent Content -->' +
-               '<div style="display:flex; flex-direction:column; gap:0;">' +
-                 tabContentHtml +
-               '</div>' +
-             '</div>';
-    },
-
-    // Screen 05: Vital Signs Grid
-    vitals: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Vital Signs Stream</h2>' +
-                 '<p>Continuous physiological telemetry streaming from suit biosensors</p>' +
-               '</div>' +
-               '<div class="tabs">' +
-                 '<button class="tab ' + (S.range==='Live'?'on':'') + '" onclick="S.set({range:\'Live\'})">Live</button>' +
-                 '<button class="tab ' + (S.range==='1D'?'on':'') + '" onclick="S.set({range:\'1D\'})">1D</button>' +
-                 '<button class="tab ' + (S.range==='7D'?'on':'') + '" onclick="S.set({range:\'7D\'})">7D</button>' +
-               '</div>' +
-             '</div>' +
-
-             '<div class="vit-grid">' +
-               VITALS.map(function(v) {
-                 return '<div class="card">' +
-                          '<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">' +
-                            '<div>' +
-                              '<div class="tile-label">' + v.name + '</div>' +
-                              '<div class="value" style="margin-top:4px;">' + v.val + ' <span class="unit">' + v.unit + '</span></div>' +
-                            '</div>' +
-                            window.pill(v.status || 'stable', (v.status || 'stable').toUpperCase()) +
-                          '</div>' +
-                          '<div style="margin-top:14px; background:#F8FAFC; border-radius:8px; padding:8px 4px 0 4px;">' +
-                            window.sparkline(v.history, v.color, 240, 50, true) +
-                          '</div>' +
-                        '</div>';
-               }).join('') +
-             '</div>';
-    },
-
-    // Screen 06: Assessment Wizard
-    assessment: function() {
-      var step = S.step || 0;
-      var pct = Math.round(((step + 1) / 4) * 100);
-
-      var bodyContent = '';
-      if (step === 0) {
-        bodyContent = '<div style="text-align:center; padding:20px 0;">' +
-                        '<div style="width:64px; height:64px; border-radius:50%; background:#EAF3FF; color:#1769E8; display:grid; place-items:center; margin:0 auto 16px;">' +
-                          window.icon('heartpulse', 32) +
-                        '</div>' +
-                        '<h3 style="font-size:20px; font-weight:800;">Cardiovascular Protocol Setup</h3>' +
-                        '<p style="max-width:440px; margin:8px auto; color:#64748B; font-size:13px;">' +
-                          'This 4-step guided assessment collects precise blood pressure, pulse wave velocity, and HRV data for Mission Control medical records.' +
-                        '</p>' +
-                      '</div>';
-      } else if (step === 1) {
-        bodyContent = '<div style="padding:10px 0;">' +
-                        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">' +
-                          '<span style="font-weight:700;">Blood Pressure Measurement</span>' +
-                          window.pill('stable', 'CAPTURED') +
-                        '</div>' +
-                        '<div style="background:#F8FAFC; border-radius:12px; padding:24px; text-align:center; border:1px solid #E2E8F0;">' +
-                          '<div class="tile-label">Systolic / Diastolic</div>' +
-                          '<div style="font-size:42px; font-weight:900; color:#0F172A; margin:6px 0;">118 / 76 <span class="unit" style="font-size:16px;">mmHg</span></div>' +
-                          '<div style="color:#16B978; font-weight:600; font-size:12px;">Optimal Range (Nominal Zero-G Adaptation)</div>' +
-                        '</div>' +
-                      '</div>';
-      } else if (step === 2) {
-        bodyContent = '<div style="padding:10px 0;">' +
-                        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">' +
-                          '<span style="font-weight:700;">Heart Rate Variability (HRV)</span>' +
-                          window.pill('stable', 'CAPTURED') +
-                        '</div>' +
-                        '<div style="background:#F8FAFC; border-radius:12px; padding:20px; border:1px solid #E2E8F0;">' +
-                          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
-                            '<span class="tile-label">Continuous ECG Waveform</span>' +
-                            '<span style="font-size:22px; font-weight:800;">64 <span class="unit">ms</span></span>' +
-                          '</div>' +
-                          window.sparkline([60,65,58,72,64,68,62,69,64], '#1769E8', 420, 70, true) +
-                        '</div>' +
-                      '</div>';
-      } else if (step === 3) {
-        bodyContent = '<div style="padding:10px 0;">' +
-                        '<h3 style="font-size:18px; font-weight:700; margin-bottom:14px;">Review Assessment Summary</h3>' +
-                        '<div style="background:#F8FAFC; border-radius:12px; padding:16px; border:1px solid #E2E8F0;">' +
-                          '<div class="rowline"><span>Blood Pressure</span><span style="font-weight:700;">118/76 mmHg</span></div>' +
-                          '<div class="rowline"><span>Heart Rate Variability</span><span style="font-weight:700;">64 ms</span></div>' +
-                          '<div class="rowline"><span>Resting Pulse</span><span style="font-weight:700;">68 bpm</span></div>' +
-                          '<div class="rowline"><span>Autonomic Balance</span><span style="font-weight:700; color:#16B978;">Normal (0.84)</span></div>' +
-                        '</div>' +
-                      '</div>';
-      }
-
-      return '<div style="max-width:680px; margin:0 auto;">' +
-               '<div class="card">' +
-                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">' +
-                   '<span style="font-size:14px; font-weight:700; color:#1769E8;">STEP ' + (step + 1) + ' OF 4</span>' +
-                   '<span class="muted">' + pct + '% Complete</span>' +
-                 '</div>' +
-                 window.meterBar(step + 1, 4, '#1769E8') +
-                 '<div style="margin-top:24px;">' + bodyContent + '</div>' +
-                 '<div style="display:flex; justify-content:space-between; margin-top:32px; padding-top:16px; border-top:1px solid #E2E8F0;">' +
-                   '<button class="btn" ' + (step===0?'disabled style="opacity:0.5;"':'onclick="S.stepBack()"') + '>&larr; Previous</button>' +
-                   (step < 3 ?
-                     '<button class="btn btn-p" onclick="S.stepNext()">Continue &rarr;</button>' :
-                     '<button class="btn btn-green" onclick="S.submitAssessment()">Submit to Flight Surgeon ✓</button>') +
-                 '</div>' +
-                 '</div>' +
-                 '</div>';
-                 },
-
-                 // Screen 07: Daily Wellness Check-in
-                 wellness: function() {
-                 return '<div class="head">' +
-                 '<div>' +
-                  '<h2>Daily Wellness Check-in</h2>' +
-                  '<p>Subjective wellbeing, mood, and cognitive readiness report</p>' +
-                 '</div>' +
-                 '</div>' +
-
-                 '<div style="max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">' +
-                 '<div class="card">' +
-                  '<div style="font-size:15px; font-weight:700; margin-bottom:14px;">How are you feeling today?</div>' +
-                  '<div class="moodrow">' +
-                    MOODS.map(function(m, idx) {
-                      var sel = S.mood === idx ? 'on' : '';
-                      return '<button class="mood ' + sel + '" onclick="S.set({mood:' + idx + '})">' +
-                               '<span style="font-size:28px;">' + m.icon + '</span>' +
-                               '<span style="font-size:12px; font-weight:600;">' + m.label + '</span>' +
-                             '</button>';
-                    }).join('') +
-                  '</div>' +
-                 '</div>' +
-
-                 '<div class="card">' +
-                  '<div style="font-size:15px; font-weight:700; margin-bottom:16px;">Subjective Indicators</div>' +
-                  '<div style="display:flex; flex-direction:column; gap:20px;">' +
-                    SLIDERS.map(function(sl) {
-                      var val = S.sliders ? (S.sliders[sl.id] || 50) : 50;
-                      return '<div class="sliderrow">' +
-                               '<span style="font-size:13px; font-weight:600;">' + sl.label + '</span>' +
-                               '<input type="range" min="0" max="100" value="' + val + '" oninput="S.setSlider(\'' + sl.id + '\', this.value)">' +
-                               '<span style="text-align:right; font-weight:700; color:#1769E8;">' + val + '%</span>' +
-                             '</div>';
-                    }).join('') +
-                  '</div>' +
-                 '</div>' +
-
-                 '<div class="note-banner">' +
-                  '<span style="font-size:20px;">💡</span>' +
-                  '<div>' +
-                    '<strong>System Notice:</strong> Your sleep score shows a 12% drop compared to baseline. Recommend 20min relaxation protocol before sleep cycle.' +
-                  '</div>' +
-                 '</div>' +
-
-                 '<div style="text-align:right;">' +
-                  '<button class="btn btn-p" style="padding:10px 24px;" onclick="S.submitWellness()">Submit Daily Log ✓</button>' +
-                 '</div>' +
-                 '</div>';
-    },
-
-    // Screen 08: Space Radiation
-    radiation: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Space Radiation Dosimetry</h2>' +
-                 '<p>Active cosmic radiation monitoring and accumulated crew dosage</p>' +
-               '</div>' +
-             '</div>' +
-
-             '<div class="two">' +
-               '<!-- Left Col -->' +
-               '<div style="display:flex; flex-direction:column; gap:20px;">' +
-                 '<div class="card">' +
-                   '<div class="tile-label">Current Ambient Exposure Rate</div>' +
-                   '<div class="value" style="font-size:36px; margin:8px 0; color:#1769E8;">1.82 <span class="unit" style="font-size:16px;">mSv / day</span></div>' +
-                   '<div style="margin-top:12px;">' +
-                     '<div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-bottom:4px;">' +
-                       '<span>SAFE LEVEL</span>' +
-                       '<span>ELEVATED</span>' +
-                       '<span>CRITICAL</span>' +
-                     '</div>' +
-                     window.meterBar(1.82, 5.0, '#1769E8') +
-                   '</div>' +
-                 '</div>' +
-
-                 '<div class="card">' +
-                   '<div class="tile-label">Accumulated Mission Dose</div>' +
-                   '<div class="value" style="font-size:36px; margin:8px 0;">214 <span class="unit" style="font-size:16px;">mSv</span></div>' +
-                   '<div class="muted">35% of Career Safe Limit (600 mSv)</div>' +
-                   '<div style="margin-top:12px;">' + window.meterBar(214, 600, '#16B978') + '</div>' +
-                 '</div>' +
-               '</div>' +
-
-               '<!-- Right Col -->' +
-               '<div style="display:flex; flex-direction:column; gap:20px;">' +
-                 '<div class="card">' +
-                   '<div style="font-size:15px; font-weight:700; margin-bottom:12px;">Space Weather &amp; Shielding</div>' +
-                   '<div class="rowline"><span>Solar Particle Event Status</span>' + window.pill('stable', 'NOMINAL (QUIET SUN)') + '</div>' +
-                   '<div class="rowline"><span>Habitat Storm Shelter Shielding</span>' + window.pill('stable', '100% OPERATIONAL') + '</div>' +
-                   '<div class="rowline"><span>Galactic Cosmic Rays (GCR)</span>' + window.pill('monitoring', 'MODERATE SPECTRUM') + '</div>' +
-                 '</div>' +
-
-                 '<div class="card">' +
-                   '<div style="font-size:15px; font-weight:700; margin-bottom:12px;">7-Day Dose Accumulation Chart</div>' +
-                   window.areaChart([1.75, 1.80, 1.82, 1.79, 1.85, 1.81, 1.82], DAYS, '#7657E8', 460, 150) +
-                 '</div>' +
-               '</div>' +
-             '</div>';
-    },
-
-    // Screen 09: Activity & Exercise
-    activity: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Activity &amp; Countermeasure Workout</h2>' +
-                 '<p>Daily zero-g physical exercise requirements to prevent bone loss</p>' +
-               '</div>' +
-             '</div>' +
-
-             '<div class="two">' +
-               '<div class="card" style="text-align:center;">' +
-                 '<div style="font-size:16px; font-weight:700; margin-bottom:20px;">Daily Countermeasure Goal</div>' +
-                 window.donutRing(82, '#16B978', 180, 16, '620 min', 'Completed / 750') +
-                 '<div style="margin-top:20px; font-size:13px; color:#64748B;">' +
-                   'Great job! You have reached 82% of your weekly zero-g physical protocol.' +
-                 '</div>' +
-               '</div>' +
-
-               '<div class="card">' +
-                 '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Today\'s Completed Sessions</div>' +
-                 ACTS.map(function(act) {
-                   return '<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #E2E8F0;">' +
-                            '<div style="display:flex; align-items:center; gap:12px;">' +
-                              '<div style="width:36px; height:36px; border-radius:10px; background:#E8F8F2; color:#16B978; display:grid; place-items:center;">' +
-                                window.icon('check', 18) +
-                              '</div>' +
-                              '<div>' +
-                                '<div style="font-weight:700; font-size:14px;">' + act.name + '</div>' +
-                                '<div style="font-size:12px; color:#64748B;">' + act.type + ' • ' + act.dur + ' min</div>' +
-                              '</div>' +
-                            '</div>' +
-                            '<span style="font-weight:700; color:#1769E8;">' + act.cal + ' kcal</span>' +
-                          '</div>';
-                 }).join('') +
-               '</div>' +
-             '</div>';
-    },
-
-    // Screen 10: Action Center / Alerts
-    alerts: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Action Center &amp; Alerts</h2>' +
-                 '<p>Active medical notifications, triage warnings, and action items</p>' +
-               '</div>' +
-             '</div>' +
-
-             '<div style="max-width:840px; margin:0 auto;">' +
-               ALERTS.map(window.alertRow).join('') +
-             '</div>';
-    },
-
-    // Screen 11: Mission Info
-    mission: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Mission Metadata &amp; Orbit Path</h2>' +
-                 '<p>Mars Transfer Telemetry • Spacecraft Environment</p>' +
-               '</div>' +
-             '</div>' +
-
-             '<div style="display:flex; flex-direction:column; gap:20px;">' +
-               '<!-- Hero Banner -->' +
-               '<div class="mission-hero">' +
-                 '<div class="mars-sphere"></div>' +
-                 '<div style="position:relative; z-index:2; max-width:540px;">' +
-                   '<div style="font-size:12px; font-weight:700; color:#38BDF8; letter-spacing:0.1em; text-transform:uppercase;">MISSION CONTROL STREAM</div>' +
-                   '<h2 style="font-size:28px; font-weight:900; margin:6px 0 10px;">Mars Transit Phase II</h2>' +
-                   '<p style="font-size:13px; color:rgba(255,255,255,0.8); line-height:1.6;">' +
-                     'Spacecraft Hermes 1 is currently in interplanetary transit toward Mars insertion orbit. All life support systems nominal.' +
-                   '</p>' +
-                 '</div>' +
-               '</div>' +
-
-               '<div class="four">' +
-                 '<div class="card"><div class="tile-label">Distance to Earth</div><div class="value">128.4M <span class="unit">km</span></div></div>' +
-                 '<div class="card"><div class="tile-label">Comm Delay</div><div class="value">14.2 <span class="unit">min</span></div></div>' +
-                 '<div class="card"><div class="tile-label">Cabin Pressure</div><div class="value">101.3 <span class="unit">kPa</span></div></div>' +
-                 '<div class="card"><div class="tile-label">Cabin O₂ Level</div><div class="value">20.9 <span class="unit">%</span></div></div>' +
-               '</div>' +
-             '</div>';
-    },
-
-    // Screen 12: Profile & Settings
-    profile: function() {
-      return '<div class="head">' +
-               '<div>' +
-                 '<h2>Astronaut Profile &amp; Devices</h2>' +
-                 '<p>Personal credentials, connected biosensors, and telemetry sync</p>' +
-               '</div>' +
-             '</div>' +
-
-             '<div class="two">' +
-               '<div class="card">' +
-                 '<div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">' +
-                   '<div style="width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg, #0B192C, #1769E8); color:#FFF; display:grid; place-items:center; font-weight:800; font-size:22px;">' +
-                     'AC' +
-                   '</div>' +
-                   '<div>' +
-                     '<h3 style="font-size:18px; font-weight:800;">Alex Carter</h3>' +
-                     '<div style="font-size:13px; color:#64748B;">Commander • AST-001</div>' +
-                     '<div style="font-size:12px; color:#1769E8; font-weight:600; margin-top:2px;">Mission: Mars Transit I</div>' +
-                   '</div>' +
-                 '</div>' +
-                 '<div class="rowline"><span>Age / Gender</span><span style="font-weight:600;">38 / Male</span></div>' +
-                 '<div class="rowline"><span>Height / Weight</span><span style="font-weight:600;">182 cm / 78 kg</span></div>' +
-                 '<div class="rowline"><span>Blood Type</span><span style="font-weight:600;">O Positive</span></div>' +
-               '</div>' +
-
-               '<div class="card">' +
-                 '<div style="font-size:16px; font-weight:700; margin-bottom:14px;">Connected Telemetry Devices</div>' +
-                 DEVICES.map(function(d) {
-                   return '<div class="rowline">' +
-                            '<div style="display:flex; align-items:center; gap:10px;">' +
-                              '<span style="color:#1769E8;">' + window.icon('device', 16) + '</span>' +
-                              '<span>' + d.name + '</span>' +
-                            '</div>' +
-                            window.pill('stable', 'CONNECTED') +
-                          '</div>';
-                 }).join('') +
-               '</div>' +
-             '</div>';
-    }
+           '</div>';
   };
+
+  // 1. ASTRONAUT OVERVIEW VIEW
+  var overviewView = function() {
+    var cid = S.crewId || 'carter';
+    var rng = S.range || '7D';
+    var t = window.getTelemetry(cid, rng);
+    var c = window.getCrewData(cid);
+    var systems = window.getCrewSystems(cid, rng);
+
+    var changesHtml = t.changes.map(function(item) {
+      var isUp = item.dir === 'up';
+      var isDown = item.dir === 'down';
+      var arrow = isUp ? '↑ ' : (isDown ? '↓ ' : '• ');
+      var color = isUp ? 'var(--emerald)' : (isDown ? 'var(--rose)' : 'var(--azure)');
+      return '<div class="item" style="padding:10px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">' +
+               '<div>' +
+                 '<div style="font-size:13px; font-weight:700; color:var(--text-primary);">' + item.name + '</div>' +
+                 '<div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">' + item.val + '</div>' +
+               '</div>' +
+               '<div style="font-size:12px; font-weight:700; font-family:var(--font-mono); color:' + color + ';">' + arrow + item.delta + '</div>' +
+             '</div>';
+    }).join('');
+
+    var systemPills = systems.slice(0, 4).map(function(sys) {
+      var isAttn = sys.status === 'Attention';
+      var badgeColor = isAttn ? 'var(--amber)' : 'var(--emerald)';
+      var badgeBg = isAttn ? 'var(--amber-bg)' : 'var(--emerald-bg)';
+      return '<div class="card" onclick="S.openSys(\'' + sys.id + '\')" style="cursor:pointer; padding:12px; transition:transform 0.15s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'none\'">' +
+               '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
+                 '<div style="display:flex; align-items:center; gap:6px; font-weight:700; font-size:12px; color:var(--text-primary);">' +
+                   window.icon(sys.icon, 14) + ' ' + sys.name +
+                 '</div>' +
+                 '<span class="badge" style="background:' + badgeBg + '; color:' + badgeColor + '; font-size:10px;">' + sys.status + '</span>' +
+               '</div>' +
+               '<div style="font-size:11px; color:var(--text-secondary); line-height:1.3;">' + sys.metrics + '</div>' +
+             '</div>';
+    }).join('');
+
+    var overviewSvg = window.areaChart ? window.areaChart(t.series, t.labels, '#0071E3', 480, 140) : '';
+
+    return '<div class="view-astronaut-overview animate-fade-in">' +
+             '<!-- Crew Switcher Bar -->' +
+             renderCrewBar(cid) +
+
+             '<!-- Page Header -->' +
+             '<div class="page-head" style="margin-bottom:16px;">' +
+               '<div>' +
+                 '<h1 class="page-title">Astronaut Telemetry &amp; Health Overview</h1>' +
+                 '<p class="page-sub">Real-time biometrics, clinical telemetry, and organ models for <strong>' + c.name + '</strong> (' + c.sid + ' • ' + c.role + ').</p>' +
+               '</div>' +
+             '</div>' +
+
+             '<!-- Time Range Tabs -->' +
+             renderRangeTabs(rng) +
+
+             '<!-- Top Stat KPI Cards -->' +
+             '<div class="grid4" style="margin-bottom:24px;">' +
+               '<div class="stat-card" style="border-left:4px solid var(--primary);">' +
+                 '<div class="stat-label">' + window.icon('vitals', 14) + ' Readiness Score (' + rng + ')</div>' +
+                 '<div class="stat-value" style="color:var(--primary);">' + t.readiness + '<span style="font-size:16px;">%</span></div>' +
+                 '<div class="stat-foot" style="color:var(--emerald);">● Optimal Flight Condition</div>' +
+               '</div>' +
+               '<div class="stat-card" style="border-left:4px solid var(--rose);">' +
+                 '<div class="stat-label">' + window.icon('heart', 14) + ' Heart Rate (' + rng + ')</div>' +
+                 '<div class="stat-value" style="color:var(--rose);">' + t.hr + '</div>' +
+                 '<div class="stat-foot" style="color:var(--text-secondary);">Resting: ' + c.hr + '</div>' +
+               '</div>' +
+               '<div class="stat-card" style="border-left:4px solid var(--amber);">' +
+                 '<div class="stat-label">' + window.icon('radiation', 14) + ' Radiation Dose Rate</div>' +
+                 '<div class="stat-value" style="color:var(--amber);">' + t.doseRate + '</div>' +
+                 '<div class="stat-foot" style="color:var(--text-secondary);">Cumulative: ' + c.radiation + '</div>' +
+               '</div>' +
+               '<div class="stat-card" style="border-left:4px solid var(--emerald);">' +
+                 '<div class="stat-label">' + window.icon('activity', 14) + ' Sleep / Exercise (' + rng + ')</div>' +
+                 '<div class="stat-value" style="color:var(--emerald);">' + t.sleepHrs + '</div>' +
+                 '<div class="stat-foot" style="color:var(--text-secondary);">Exercise: ' + t.workoutMin + '</div>' +
+               '</div>' +
+             '</div>' +
+
+             '<!-- Main Overview Columns: 3D Body Card + Telemetry Trends -->' +
+             '<div class="grid-2-1" style="grid-template-columns: 1.1fr 0.9fr; gap:24px;">' +
+               '<!-- 3D Organ Canvas Card -->' +
+               '<div class="card" style="padding:20px; display:flex; flex-direction:column;">' +
+                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
+                   '<div style="display:flex; align-items:center; gap:8px;">' +
+                     window.icon('systems', 18) +
+                     '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary);">Interactive Organ Systems (3D GLB)</h3>' +
+                   '</div>' +
+                   '<button class="btn btn-sm" onclick="S.set({view:\'systems\'})">View All Systems →</button>' +
+                 '</div>' +
+                 '<div class="organ-viewer-container" style="height:320px; position:relative; background:#0B132B; border-radius:14px; overflow:hidden; border:1px solid var(--border);">' +
+                   '<canvas id="organ-canvas" style="width:100%; height:100%; display:block;"></canvas>' +
+                   '<div style="position:absolute; bottom:12px; left:14px; font-size:11px; color:#A0AEC0; pointer-events:none; background:rgba(0,0,0,0.5); padding:4px 8px; border-radius:6px;">' +
+                     '3D Mesh Loaded • OrbitControls Active (Drag to Rotate, Scroll to Zoom)' +
+                   '</div>' +
+                 '</div>' +
+                 '<div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">' +
+                   systemPills +
+                 '</div>' +
+               '</div>' +
+
+               '<!-- Trends & Recent Biomarker Changes Card -->' +
+               '<div class="card" style="padding:20px; display:flex; flex-direction:column; justify-content:space-between;">' +
+                 '<div>' +
+                   '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
+                     '<div style="display:flex; align-items:center; gap:8px;">' +
+                       window.icon('vitals', 18) +
+                       '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary);">Biomarker Dynamic Changes (' + rng + ')</h3>' +
+                     '</div>' +
+                     '<span class="badge" style="background:var(--primary-light); color:var(--primary); font-size:11px;">' + c.name + '</span>' +
+                   '</div>' +
+                   '<div style="margin-bottom:16px;">' +
+                     overviewSvg +
+                   '</div>' +
+                   '<div style="margin-top:10px;">' +
+                     changesHtml +
+                   '</div>' +
+                 '</div>' +
+                 '<div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border); display:flex; gap:10px;">' +
+                   '<button class="btn btn-primary" style="flex:1;" onclick="S.set({view:\'assessment\'})">Start Clinical Check →</button>' +
+                   '<button class="btn" style="flex:1;" onclick="S.set({view:\'wellness\'})">Daily Wellness Log</button>' +
+                 '</div>' +
+               '</div>' +
+             '</div>' +
+           '</div>';
+  };
+
+  // 2. SYSTEMS VIEW
+  var systemsView = function() {
+    var cid = S.crewId || 'carter';
+    var rng = S.range || '7D';
+    var c = window.getCrewData(cid);
+    var systems = window.getCrewSystems(cid, rng);
+
+    var cards = systems.map(function(sys) {
+      var isAttn = sys.status === 'Attention';
+      var badgeColor = isAttn ? 'var(--amber)' : (sys.status === 'Monitoring' ? 'var(--azure)' : 'var(--emerald)');
+      var badgeBg = isAttn ? 'var(--amber-bg)' : (sys.status === 'Monitoring' ? 'var(--azure-bg)' : 'var(--emerald-bg)');
+
+      var paramsHtml = sys.parameters.map(function(p) {
+        return '<div style="display:flex; justify-content:space-between; font-size:11px; padding:4px 0; border-bottom:1px dashed var(--border);">' +
+                 '<span style="color:var(--text-secondary);">' + p.label + ':</span>' +
+                 '<strong style="font-family:var(--font-mono); color:var(--text-primary);">' + p.val + ' ' + p.unit + '</strong>' +
+               '</div>';
+      }).join('');
+
+      return '<div class="card" style="padding:18px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;" onclick="S.openSys(\'' + sys.id + '\')">' +
+               '<div>' +
+                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                   '<div style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:14px; color:var(--text-primary);">' +
+                     window.icon(sys.icon, 18) + ' ' + sys.name +
+                   '</div>' +
+                   '<span class="badge" style="background:' + badgeBg + '; color:' + badgeColor + '; font-size:10px;">' + sys.status + '</span>' +
+                 '</div>' +
+                 '<p style="font-size:12px; color:var(--text-secondary); line-height:1.4; margin-bottom:12px;">' + sys.blurb + '</p>' +
+                 '<div style="background:var(--bg); padding:10px; border-radius:8px; margin-bottom:14px;">' +
+                   paramsHtml +
+                 '</div>' +
+               '</div>' +
+               '<button class="btn btn-sm btn-primary" style="width:100%;">Open ' + sys.name + ' Telemetry →</button>' +
+             '</div>';
+    }).join('');
+
+    return '<div class="view-systems animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Organ Systems Telemetry (' + systems.length + ' Systems)</h1>' +
+                 '<p class="page-sub">Physiological breakdown and 3D organ monitoring for <strong>' + c.name + '</strong> (' + rng + ').</p>' +
+               '</div>' +
+             '</div>' +
+             renderRangeTabs(rng) +
+             '<div class="grid4" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:18px;">' +
+               cards +
+             '</div>' +
+           '</div>';
+  };
+
+  // 3. SYSTEM DETAIL VIEW
+  var systemDetailView = function() {
+    var cid = S.crewId || 'carter';
+    var rng = S.range || '7D';
+    var sysId = S.sys || 'cardiovascular';
+    var systems = window.getCrewSystems(cid, rng);
+    var sys = systems.find(function(s) { return s.id === sysId; }) || systems[0];
+    var c = window.getCrewData(cid);
+    var t = window.getTelemetry(cid, rng);
+
+    var subTab = S.subTab || 'overview';
+
+    var paramsHtml = sys.parameters.map(function(p) {
+      return '<div class="stat-card">' +
+               '<div class="stat-label">' + p.label + '</div>' +
+               '<div class="stat-value">' + p.val + '<span style="font-size:14px; margin-left:4px;">' + p.unit + '</span></div>' +
+               '<div class="stat-foot" style="color:var(--primary);">' + (p.delta || 'Nominal') + '</div>' +
+             '</div>';
+    }).join('');
+
+    var recommendationsHtml = sys.recommendations.map(function(rec, idx) {
+      return '<div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; font-size:12px; color:var(--text-primary);">' +
+               '<span style="background:var(--primary); color:#fff; border-radius:50%; width:20px; height:20px; display:grid; place-items:center; font-weight:800; flex-shrink:0;">' + (idx+1) + '</span>' +
+               '<div>' + rec + '</div>' +
+             '</div>';
+    }).join('');
+
+    var sysChartSvg = window.areaChart ? window.areaChart(sys.chartData || t.series, t.labels, '#0071E3', 440, 160) : '';
+
+    return '<div class="view-system-detail animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">' +
+               '<button class="btn btn-sm" onclick="S.set({view:\'systems\'})">← Back to All Systems</button>' +
+               '<div style="display:flex; gap:8px;">' +
+                 '<button class="btn btn-sm ' + (subTab === 'overview' ? 'btn-primary' : '') + '" onclick="S.set({subTab:\'overview\'})">Overview</button>' +
+                 '<button class="btn btn-sm ' + (subTab === 'trends' ? 'btn-primary' : '') + '" onclick="S.set({subTab:\'trends\'})">Trends &amp; Metrics</button>' +
+                 '<button class="btn btn-sm ' + (subTab === 'countermeasures' ? 'btn-primary' : '') + '" onclick="S.set({subTab:\'countermeasures\'})">Protocols &amp; Insights</button>' +
+               '</div>' +
+             '</div>' +
+
+             renderRangeTabs(rng) +
+
+             '<div class="grid-2-1" style="grid-template-columns: 1.2fr 0.8fr; gap:20px;">' +
+               '<!-- 3D Organ Canvas Card -->' +
+               '<div class="card" style="padding:20px;">' +
+                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">' +
+                   '<div style="display:flex; align-items:center; gap:8px;">' +
+                     window.icon(sys.icon, 20) +
+                     '<h2 style="font-size:18px; font-weight:800; color:var(--text-primary);">' + sys.name + ' 3D Telemetry</h2>' +
+                   '</div>' +
+                   '<span class="badge badge-stable">' + sys.status + '</span>' +
+                 '</div>' +
+                 '<div class="organ-viewer-container" style="height:380px; position:relative; background:#0B132B; border-radius:14px; overflow:hidden; border:1px solid var(--border);">' +
+                   '<canvas id="organ-canvas" style="width:100%; height:100%; display:block;"></canvas>' +
+                   '<div style="position:absolute; top:12px; left:12px; background:rgba(0,0,0,0.6); padding:6px 12px; border-radius:8px; font-size:11px; color:#fff;">' +
+                     'Model: <strong>' + sys.name + ' (HRA/BodyParts3D)</strong>' +
+                   '</div>' +
+                 '</div>' +
+               '</div>' +
+
+               '<!-- Parameters & Trends -->' +
+               '<div class="card" style="padding:20px;">' +
+                 '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin-bottom:14px;">' + sys.chartTitle + '</h3>' +
+                 '<div style="margin-bottom:18px;">' +
+                   sysChartSvg +
+                 '</div>' +
+                 '<h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:10px;">Live Physiological Metrics</h4>' +
+                 '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:18px;">' +
+                   paramsHtml +
+                 '</div>' +
+                 '<h4 style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">Flight Surgeon Protocols</h4>' +
+                 recommendationsHtml +
+               '</div>' +
+             '</div>' +
+           '</div>';
+  };
+
+  // 4. VITALS VIEW
+  var vitalsView = function() {
+    var cid = S.crewId || 'carter';
+    var rng = S.range || '7D';
+    var vitals = window.getCrewVitals(cid, rng);
+    var c = window.getCrewData(cid);
+
+    var cards = vitals.map(function(v) {
+      var sparkSvg = window.sparkline ? window.sparkline(v.sparkData, '#0071E3', 220, 42, true) : '';
+      return '<div class="card" style="padding:18px; display:flex; flex-direction:column; justify-content:space-between;">' +
+               '<div>' +
+                 '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
+                   '<span style="font-size:13px; font-weight:700; color:var(--text-primary);">' + v.name + '</span>' +
+                   '<span class="badge badge-' + v.status + '" style="font-size:10px;">' + v.status.toUpperCase() + '</span>' +
+                 '</div>' +
+                 '<div style="font-size:26px; font-weight:900; font-family:var(--font-mono); color:var(--text-primary); margin-bottom:12px;">' +
+                   v.value + ' <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">' + v.unit + '</span>' +
+                 '</div>' +
+               '</div>' +
+               '<div style="height:42px; width:100%; margin-top:8px;">' +
+                 sparkSvg +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    return '<div class="view-vitals animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Continuous BioMonitor Vital Signs</h1>' +
+                 '<p class="page-sub">Direct telemetry feed for <strong>' + c.name + '</strong> (' + c.sid + ' • ' + rng + ').</p>' +
+               '</div>' +
+             '</div>' +
+             renderRangeTabs(rng) +
+             '<div class="grid4" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:18px;">' +
+               cards +
+             '</div>' +
+           '</div>';
+  };
+
+  // 5. CLINICAL ASSESSMENT WIZARD VIEW
+  var assessmentView = function() {
+    var cid = S.crewId || 'carter';
+    var c = window.getCrewData(cid);
+    var step = S.step || 0;
+
+    var stepContent = '';
+    if (step === 0) {
+      stepContent = '<div style="padding:10px 0;">' +
+                      '<h3 style="font-size:16px; font-weight:800; color:var(--text-primary); margin-bottom:10px;">Step 1: BioMonitor Baseline Calibration</h3>' +
+                      '<p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:16px;">' +
+                        'Ensure the chest sensor harness and optical pulse plethysmograph are snug against skin. Live calibration for <strong>' + c.name + '</strong> is running.' +
+                      '</p>' +
+                      '<div style="background:var(--bg); padding:16px; border-radius:12px; margin-bottom:20px;">' +
+                        '<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">' +
+                          '<span>Heart Rate Signal Quality:</span>' +
+                          '<strong style="color:var(--emerald);">100% (High SNR)</strong>' +
+                        '</div>' +
+                        '<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">' +
+                          '<span>Resting Baseline:</span>' +
+                          '<strong style="font-family:var(--font-mono);">' + c.hr + '</strong>' +
+                        '</div>' +
+                        '<div style="display:flex; justify-content:space-between; font-size:13px;">' +
+                          '<span>SpO₂ Sensor Drift:</span>' +
+                          '<strong style="color:var(--emerald);">0.0% Nominal</strong>' +
+                        '</div>' +
+                      '</div>' +
+                      '<button class="btn btn-primary" onclick="S.stepNext()">Proceed to Neuro-Vestibular Test →</button>' +
+                    '</div>';
+    } else if (step === 1) {
+      stepContent = '<div style="padding:10px 0;">' +
+                      '<h3 style="font-size:16px; font-weight:800; color:var(--text-primary); margin-bottom:10px;">Step 2: Neuro-Vestibular &amp; Saccadic Latency Test</h3>' +
+                      '<p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:16px;">' +
+                        'Tracking visual fixation target to measure zero-g otolith desensitization.' +
+                      '</p>' +
+                      '<div style="background:#0B132B; padding:30px; border-radius:12px; text-align:center; margin-bottom:20px; border:1px solid var(--border);">' +
+                        '<div style="font-size:36px; margin-bottom:8px;">🎯</div>' +
+                        '<div style="font-size:14px; font-weight:700; color:#fff;">Saccadic Reaction Time: 212 ms</div>' +
+                        '<div style="font-size:12px; color:#A0AEC0; margin-top:4px;">Within Nominal Envelope (&lt; 250 ms)</div>' +
+                      '</div>' +
+                      '<div style="display:flex; gap:10px;">' +
+                        '<button class="btn" onclick="S.stepBack()">← Previous Step</button>' +
+                        '<button class="btn btn-primary" onclick="S.stepNext()">Complete Diagnostic Summary →</button>' +
+                      '</div>' +
+                    '</div>';
+    } else {
+      stepContent = '<div style="padding:10px 0;">' +
+                      '<h3 style="font-size:16px; font-weight:800; color:var(--text-primary); margin-bottom:10px;">Step 3: Clinical Diagnostic Review &amp; Flight Surgeon Telemetry Sign-off</h3>' +
+                      '<p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin-bottom:16px;">' +
+                        'All physiological metrics for <strong>' + c.name + '</strong> have been captured and verified against Sol 184 cruise baselines.' +
+                      '</p>' +
+                      '<div style="background:var(--bg); padding:16px; border-radius:12px; margin-bottom:20px; border-left:4px solid var(--emerald);">' +
+                        '<div style="font-weight:700; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Medical Clearance Status:</div>' +
+                        '<div style="font-size:13px; color:var(--emerald); font-weight:800;">FLIGHT QUALIFIED / NOMINAL MARS CRUISE</div>' +
+                      '</div>' +
+                      '<div style="display:flex; gap:10px;">' +
+                        '<button class="btn" onclick="S.stepBack()">← Previous Step</button>' +
+                        '<button class="btn btn-primary" onclick="S.submitAssessment()">Submit Report to Ground Control ✓</button>' +
+                      '</div>' +
+                    '</div>';
+    }
+
+    return '<div class="view-assessment animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Interactive Medical &amp; Fitness Assessment</h1>' +
+                 '<p class="page-sub">Step-by-step diagnostic verification protocol for <strong>' + c.name + '</strong>.</p>' +
+               '</div>' +
+             '</div>' +
+             '<div class="card" style="max-width:760px; margin:0 auto; padding:24px;">' +
+               stepContent +
+             '</div>' +
+           '</div>';
+  };
+
+  // 6. WELLNESS CHECK-IN VIEW (WITH RICH W3SCHOOLS HTML EMOJIS)
+  var wellnessView = function() {
+    var cid = S.crewId || 'carter';
+    var c = window.getCrewData(cid);
+    var curMood = S.mood !== undefined ? S.mood : 1;
+    var sliders = S.sliders || {};
+
+    // Mood cards with W3Schools HTML Emojis
+    var moodsHtml = (window.MOODS || []).map(function(m, idx) {
+      var active = (idx === curMood) ? 'active' : '';
+      return '<div class="mood-card ' + active + '" onclick="S.setMood(' + idx + ')">' +
+               '<div class="mood-emoji">' + m.emojiCode + '</div>' +
+               '<div class="mood-label">' + m.label + '</div>' +
+               '<div class="mood-desc">' + m.desc + '</div>' +
+             '</div>';
+    }).join('');
+
+    // Subjective Sliders with HTML Emojis
+    var slidersHtml = (window.SLIDERS || []).map(function(sl) {
+      var val = sliders[sl.id] !== undefined ? sliders[sl.id] : sl.defaultVal;
+      return '<div class="wellness-slider-box">' +
+               '<div class="slider-header-line">' +
+                 '<div class="slider-title-wrap">' +
+                   '<span class="slider-emoji-icon">' + sl.emoji + '</span>' +
+                   '<span>' + sl.label + '</span>' +
+                 '</div>' +
+                 '<div class="slider-value-pill" id="slider-val-' + sl.id + '">' + val + '%</div>' +
+               '</div>' +
+               '<input type="range" min="0" max="100" value="' + val + '" style="width:100%; accent-color:var(--primary); cursor:pointer;" oninput="S.setSlider(\'' + sl.id + '\', this.value)">' +
+               '<div class="slider-sub-labels">' +
+                 '<span>' + sl.minEmoji + ' ' + sl.minLabel + '</span>' +
+                 '<span>' + sl.maxEmoji + ' ' + sl.maxLabel + '</span>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    // Zero-G Symptoms with HTML Emojis
+    var symptomsHtml = (window.ZERO_G_SYMPTOMS || []).map(function(sym) {
+      return '<label class="symptom-item">' +
+               '<input type="checkbox" checked>' +
+               '<span class="symptom-emoji">' + sym.emoji + '</span>' +
+               '<div>' +
+                 '<div class="symptom-name">' + sym.label + '</div>' +
+                 '<div class="symptom-desc">' + sym.desc + '</div>' +
+               '</div>' +
+             '</label>';
+    }).join('');
+
+    return '<div class="view-wellness animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Daily Subjective Wellness &amp; Zero-G Symptoms Check</h1>' +
+                 '<p class="page-sub">Logged daily by <strong>' + c.name + '</strong> for flight surgeon psychological and somatic telemetry.</p>' +
+               '</div>' +
+             '</div>' +
+
+             '<div class="card" style="max-width:820px; margin:0 auto; padding:24px;">' +
+               '<!-- Mood Selection with W3Schools Emojis -->' +
+               '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin-bottom:4px;">1. Overall Mood &amp; Psychological Valence</h3>' +
+               '<p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">Select the emoji that best reflects your mental alertness and emotional state today:</p>' +
+               '<div class="mood-grid">' +
+                 moodsHtml +
+               '</div>' +
+
+               '<!-- Subjective Sliders with Emojis -->' +
+               '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin-top:24px; margin-bottom:4px;">2. Physiological Energy &amp; Restfulness Sliders</h3>' +
+               '<p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px;">Calibrate subjective feelings across key metabolic and cognitive dimensions:</p>' +
+               slidersHtml +
+
+               '<!-- Zero-G Symptoms Checklist -->' +
+               '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin-top:24px; margin-bottom:4px;">3. Microgravity Adaptation Symptoms Check</h3>' +
+               '<div class="symptom-grid">' +
+                 symptomsHtml +
+               '</div>' +
+
+               '<!-- Notes Field -->' +
+               '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin-top:20px; margin-bottom:6px;">4. Sol 184 Personal Log Notes</h3>' +
+               '<textarea id="wellness-notes" placeholder="Enter subjective notes (e.g. sleep quality, headache, taste changes, exercise fatigue)..." style="width:100%; height:80px; padding:12px; border-radius:10px; border:1px solid var(--border); font-family:var(--font-sans); font-size:13px; resize:vertical; outline:none; background:var(--bg); color:var(--text-primary); margin-bottom:20px;"></textarea>' +
+
+               '<!-- Submit Button -->' +
+               '<button class="btn btn-primary" style="width:100%; padding:14px; font-size:14px;" onclick="S.submitWellness()">' +
+                 '&#128640; Submit Daily Wellness Check-In to Flight Surgeon' +
+               '</button>' +
+             '</div>' +
+           '</div>';
+  };
+
+  // 7. RADIATION VIEW
+  var radiationView = function() {
+    var cid = S.crewId || 'carter';
+    var rng = S.range || '7D';
+    var t = window.getTelemetry(cid, rng);
+    var c = window.getCrewData(cid);
+    var radSvg = window.areaChart ? window.areaChart(t.radSeries, t.labels, '#F5A623', 700, 200) : '';
+
+    return '<div class="view-radiation animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Galactic Cosmic Ray (GCR) &amp; SPE Dosimetry</h1>' +
+                 '<p class="page-sub">Active personal dosimeter telemetry for <strong>' + c.name + '</strong> (' + rng + ').</p>' +
+               '</div>' +
+             '</div>' +
+             renderRangeTabs(rng) +
+             '<div class="grid4" style="margin-bottom:24px;">' +
+               '<div class="stat-card" style="border-left:4px solid var(--amber);">' +
+                 '<div class="stat-label">Daily Dose Rate (' + rng + ')</div>' +
+                 '<div class="stat-value" style="color:var(--amber);">' + t.doseRate + '</div>' +
+                 '<div class="stat-foot">Background Interplanetary</div>' +
+               '</div>' +
+               '<div class="stat-card" style="border-left:4px solid var(--primary);">' +
+                 '<div class="stat-label">Accumulated in Period</div>' +
+                 '<div class="stat-value" style="color:var(--primary);">' + t.doseAcc + '</div>' +
+                 '<div class="stat-foot">' + rng + ' Transit Accumulation</div>' +
+               '</div>' +
+               '<div class="stat-card" style="border-left:4px solid var(--emerald);">' +
+                 '<div class="stat-label">Total Career Dose</div>' +
+                 '<div class="stat-value" style="color:var(--emerald);">' + c.radiation + '</div>' +
+                 '<div class="stat-foot">35% of 600 mSv NASA Limit</div>' +
+               '</div>' +
+               '<div class="stat-card" style="border-left:4px solid var(--azure);">' +
+                 '<div class="stat-label">Water Shielding Efficacy</div>' +
+                 '<div class="stat-value" style="color:var(--azure);">99.4%</div>' +
+                 '<div class="stat-foot">Hab Storm Shelter Nominal</div>' +
+               '</div>' +
+             '</div>' +
+             '<div class="card" style="padding:20px;">' +
+               '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin-bottom:14px;">GCR Ionizing Radiation Exposure Trend (' + rng + ')</h3>' +
+               '<div>' +
+                 radSvg +
+               '</div>' +
+             '</div>' +
+           '</div>';
+  };
+
+  // 8. ACTIVITY & FITNESS VIEW
+  var activityView = function() {
+    var cid = S.crewId || 'carter';
+    var rng = S.range || '7D';
+    var t = window.getTelemetry(cid, rng);
+    var c = window.getCrewData(cid);
+
+    var actsHtml = (window.ACTS || []).map(function(a) {
+      return '<div class="card" style="padding:14px; display:flex; justify-content:space-between; align-items:center;">' +
+               '<div style="display:flex; align-items:center; gap:12px;">' +
+                 '<div style="font-size:24px;">' + a.emoji + '</div>' +
+                 '<div>' +
+                   '<div style="font-size:13px; font-weight:700; color:var(--text-primary);">' + a.name + '</div>' +
+                   '<div style="font-size:11px; color:var(--text-secondary);">' + a.type + ' • ' + a.dur + ' min</div>' +
+                 '</div>' +
+               '</div>' +
+               '<div style="text-align:right;">' +
+                 '<div style="font-size:14px; font-weight:800; font-family:var(--font-mono); color:var(--primary);">' + a.cal + ' kcal</div>' +
+                 '<div style="font-size:10px; color:var(--emerald);">Completed 100%</div>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    return '<div class="view-activity animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Countermeasure Exercise &amp; Fitness Protocol</h1>' +
+                 '<p class="page-sub">ARED resistive loading, T2 treadmill, and CEVIS cycle logs for <strong>' + c.name + '</strong> (' + rng + ').</p>' +
+               '</div>' +
+             '</div>' +
+             renderRangeTabs(rng) +
+             '<div class="grid4" style="margin-bottom:24px;">' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">Exercise Total (' + rng + ')</div>' +
+                 '<div class="stat-value" style="color:var(--emerald);">' + t.workoutMin + '</div>' +
+                 '<div class="stat-foot">Target: 700 min/week</div>' +
+               '</div>' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">ARED Resistance Compliance</div>' +
+                 '<div class="stat-value" style="color:var(--primary);">96.5%</div>' +
+                 '<div class="stat-foot">Bone Loss Countermeasure</div>' +
+               '</div>' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">EVA Training Hours</div>' +
+                 '<div class="stat-value" style="color:var(--azure);">' + c.evaHours + ' h</div>' +
+                 '<div class="stat-foot">' + c.evaCount + ' Extravehicular Sorties</div>' +
+               '</div>' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">VO₂ Max Retention</div>' +
+                 '<div class="stat-value" style="color:var(--purple, #7657E8);">94.2%</div>' +
+                 '<div class="stat-foot">Aerobic Endurance Nominal</div>' +
+               '</div>' +
+             '</div>' +
+             '<div class="card" style="padding:20px; margin-bottom:20px;">' +
+               '<h3 style="font-size:15px; font-weight:800; color:var(--text-primary); margin-bottom:14px;">Recent Exercise Sessions</h3>' +
+               '<div style="display:flex; flex-direction:column; gap:10px;">' +
+                 actsHtml +
+               '</div>' +
+             '</div>' +
+           '</div>';
+  };
+
+  // 9. ALERTS / ACTION CENTER VIEW
+  var alertsView = function() {
+    var cid = S.crewId || 'carter';
+    var c = window.getCrewData(cid);
+
+    var alertsHtml = (window.ALERTS || []).map(function(a) {
+      return '<div class="card" style="padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:flex-start; border-left:4px solid var(--amber);">' +
+               '<div style="display:flex; gap:12px; align-items:flex-start;">' +
+                 '<div style="font-size:20px; margin-top:2px;">' + window.icon(a.icon, 20) + '</div>' +
+                 '<div>' +
+                   '<div style="font-size:14px; font-weight:700; color:var(--text-primary);">' + a.title + '</div>' +
+                   '<div style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.4;">' + a.desc + '</div>' +
+                 '</div>' +
+               '</div>' +
+               '<span class="badge badge-attention">' + a.time + '</span>' +
+             '</div>';
+    }).join('');
+
+    return '<div class="view-alerts animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Action Center &amp; Health Alerts</h1>' +
+                 '<p class="page-sub">Active medical anomalies and priority notifications for <strong>' + c.name + '</strong>.</p>' +
+               '</div>' +
+             '</div>' +
+             alertsHtml +
+           '</div>';
+  };
+
+  // 10. MISSION INFO VIEW
+  var missionView = function() {
+    var m = window.MISSION;
+    return '<div class="view-mission animate-fade-in">' +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">' + m.name + ' — Mission Status</h1>' +
+                 '<p class="page-sub">Flight trajectory, telemetry latency, and interplanetary transit milestones.</p>' +
+               '</div>' +
+             '</div>' +
+             '<div class="grid4" style="margin-bottom:24px;">' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">Mission Transit Day</div>' +
+                 '<div class="stat-value" style="color:var(--primary);">' + m.day + ' <span style="font-size:14px;">/ ' + m.total + '</span></div>' +
+                 '<div class="stat-foot">20.2% Progress to Mars Orbit</div>' +
+               '</div>' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">Earth-Vessel Distance</div>' +
+                 '<div class="stat-value" style="color:var(--azure);">' + m.distance + '</div>' +
+                 '<div class="stat-foot">Deep Space Network Linked</div>' +
+               '</div>' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">One-Way Signal Delay</div>' +
+                 '<div class="stat-value" style="color:var(--amber);">' + m.delay + '</div>' +
+                 '<div class="stat-foot">Speed-of-Light Comm Gap</div>' +
+               '</div>' +
+               '<div class="stat-card">' +
+                 '<div class="stat-label">Mission Phase</div>' +
+                 '<div class="stat-value" style="font-size:18px; color:var(--emerald);">' + m.phase + '</div>' +
+                 '<div class="stat-foot">Autonomous ECLSS Active</div>' +
+               '</div>' +
+             '</div>' +
+           '</div>';
+  };
+
+  // 11. PROFILE & SETTINGS VIEW
+  var profileView = function() {
+    var cid = S.crewId || 'carter';
+    var c = window.getCrewData(cid);
+
+    return '<div class="view-profile animate-fade-in">' +
+             renderCrewBar(cid) +
+             '<div class="page-head">' +
+               '<div>' +
+                 '<h1 class="page-title">Astronaut Medical Dossier &amp; Biometrics</h1>' +
+                 '<p class="page-sub">Official NASA flight surgeon baseline records for <strong>' + c.name + '</strong> (' + c.sid + ').</p>' +
+               '</div>' +
+             '</div>' +
+             '<div class="card" style="max-width:720px; padding:24px;">' +
+               '<div style="display:flex; gap:18px; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);">' +
+                 '<div class="crew-card-avatar" style="width:60px; height:60px; font-size:20px;">' + c.avatar + '</div>' +
+                 '<div>' +
+                   '<h2 style="font-size:18px; font-weight:800; color:var(--text-primary);">' + c.name + '</h2>' +
+                   '<div style="font-size:13px; color:var(--text-secondary);">' + c.role + ' • Serial ID: <strong>' + c.sid + '</strong></div>' +
+                   '<div style="font-size:12px; color:var(--emerald); margin-top:2px;">● ' + c.statusLabel + '</div>' +
+                 '</div>' +
+               '</div>' +
+               '<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">' +
+                 '<div><span style="font-size:11px; color:var(--text-secondary);">Age / Gender:</span><div style="font-size:13px; font-weight:700;">' + c.age + ' yrs / ' + c.gender + '</div></div>' +
+                 '<div><span style="font-size:11px; color:var(--text-secondary);">Height / Mass:</span><div style="font-size:13px; font-weight:700;">' + c.height + ' / ' + c.weight + '</div></div>' +
+                 '<div><span style="font-size:11px; color:var(--text-secondary);">Blood Group:</span><div style="font-size:13px; font-weight:700;">' + c.bloodType + '</div></div>' +
+                 '<div><span style="font-size:11px; color:var(--text-secondary);">EVA Sorties:</span><div style="font-size:13px; font-weight:700;">' + c.evaCount + ' (' + c.evaHours + ' hrs logged)</div></div>' +
+                 '<div style="grid-column:1 / -1;"><span style="font-size:11px; color:var(--text-secondary);">Emergency Contact:</span><div style="font-size:13px; font-weight:700;">' + c.emergencyContact + '</div></div>' +
+               '</div>' +
+               '<button class="btn btn-primary" onclick="S.logout()">Log Out / Switch Role Portal</button>' +
+             '</div>' +
+           '</div>';
+  };
+
+  // Expose methods under both V and AstronautViews with kebab-case and camelCase aliases
+  var viewsObj = {
+    login: loginView,
+    overview: overviewView,
+    systems: systemsView,
+    'system-detail': systemDetailView,
+    systemDetail: systemDetailView,
+    vitals: vitalsView,
+    telemetry: vitalsView,
+    assessment: assessmentView,
+    wellness: wellnessView,
+    radiation: radiationView,
+    activity: activityView,
+    trends: activityView,
+    alerts: alertsView,
+    mission: missionView,
+    profile: profileView
+  };
+
+  Object.assign(window.V, viewsObj);
+  Object.assign(window.AstronautViews, viewsObj);
 })();

@@ -102,10 +102,26 @@
     }
 
     // Load Textured GLTF / GLB Model
+    var modelMap = {
+      'cardiovascular': 'models/organs/VH_M_Heart.glb',
+      'heart': 'models/organs/VH_M_Heart.glb',
+      'respiratory': 'models/organs/VH_M_Lung.glb',
+      'lungs': 'models/organs/VH_M_Lung.glb',
+      'neurological': 'models/organs/Allen_M_Brain.glb',
+      'brain': 'models/organs/Allen_M_Brain.glb',
+      'musculoskeletal': 'models/organs/Skeleton.glb',
+      'skeleton': 'models/organs/Skeleton.glb',
+      'immune': 'models/organs/Endocrine.glb',
+      'behavioral': 'models/organs/sleep_astronaut.glb',
+      'radiation': 'models/organs/Skeleton.glb',
+      'environmental': 'models/organs/Skeleton.glb'
+    };
+    var resolvedPath = modelMap[modelPath] || modelPath || 'models/organs/VH_M_Heart.glb';
+
     if (window.THREE && THREE.GLTFLoader) {
       var loader = new THREE.GLTFLoader();
       loader.load(
-        modelPath,
+        resolvedPath,
         function(gltf) {
           if (isDisposed) return;
           var model = gltf.scene;

@@ -4,6 +4,7 @@
   window.renderShell = function(contentHtml) {
     var role = S.role;
     var view = S.view;
+    var activeCrew = (typeof window.getCrewData === 'function') ? window.getCrewData(S.crewId) : { name: 'Alex Carter', sid: 'AST-001', avatar: 'AC', role: 'Commander' };
 
     var navItems = [];
     if (role === 'astronaut') {
@@ -20,9 +21,10 @@
         { id: 'profile', label: 'Profile & Settings', icon: 'profile' }
       ];
     } else if (role === 'staff') {
+      var staffLabel = 'Crew Detail (' + (activeCrew ? activeCrew.name.split(' ')[1] || activeCrew.name : 'Crew') + ')';
       navItems = [
         { id: 'staff-overview', label: 'Crew Overview', icon: 'crew' },
-        { id: 'crew-detail', label: 'Crew Detail (Kim)', icon: 'profile' },
+        { id: 'crew-detail', label: staffLabel, icon: 'profile' },
         { id: 'systems', label: 'System Analytics', icon: 'systems' },
         { id: 'alerts', label: 'Medical Alerts', icon: 'alerts' },
         { id: 'mission', label: 'Mission Status', icon: 'mission' },
@@ -47,8 +49,25 @@
     }).join('');
 
     var roleTitle = role === 'astronaut' ? 'ASTRONAUT PORTAL' : (role === 'staff' ? 'FLIGHT SURGEON' : 'MISSION CONTROL');
-    var userBadge = role === 'astronaut' ? 'Alex Carter • AST-001' : (role === 'staff' ? 'Dr. Marina Santos' : 'Flight Director');
-    var roleShort = role === 'astronaut' ? 'Crew EVA' : (role === 'staff' ? 'Med Ops' : 'HQ Comm');
+    var userBadge = role === 'astronaut' ? (activeCrew.name + ' • ' + activeCrew.sid) : (role === 'staff' ? 'Dr. Marina Santos' : 'Flight Director');
+    var roleShort = role === 'astronaut' ? activeCrew.role : (role === 'staff' ? 'Med Ops Lead' : 'HQ Comm');
+    var avatarLetters = role === 'astronaut' ? activeCrew.avatar : (role === 'staff' ? 'MS' : 'FD');
+
+    // Crew switcher dropdown options
+    var crewOptions = (window.CREW || []).map(function(c) {
+      var sel = (c.id === S.crewId) ? 'selected' : '';
+      return '<option value="' + c.id + '" ' + sel + '>' + c.name + ' (' + c.sid + ' - ' + c.role + ')</option>';
+    }).join('');
+
+    var headerCrewSwitcher = '';
+    if (role === 'astronaut' || role === 'staff') {
+      headerCrewSwitcher = '<div class="header-crew-select-wrapper">' +
+                             '<label class="crew-select-label">' + window.icon('crew', 13) + ' Astronaut:</label>' +
+                             '<select class="header-crew-select" onchange="S.switchCrew(this.value)">' +
+                               crewOptions +
+                             '</select>' +
+                           '</div>';
+    }
 
     return '<div class="app">' +
              '<!-- Sidebar -->' +
@@ -87,8 +106,9 @@
                    '<span class="meta-stats">Distance: <strong>128.4M km</strong> • Earth Delay: <strong>14m 22s</strong> • Link: <strong style="color:var(--emerald);">99.8%</strong></span>' +
                  '</div>' +
                  '<div class="right">' +
+                   headerCrewSwitcher +
                    '<div class="rolebadge">' +
-                     '<span class="role-avatar">' + (role === 'astronaut' ? 'AC' : (role === 'staff' ? 'MS' : 'FD')) + '</span>' +
+                     '<span class="role-avatar">' + avatarLetters + '</span>' +
                      '<div class="role-details">' +
                        '<span class="role-name">' + userBadge + '</span>' +
                        '<span class="role-sub">' + roleShort + '</span>' +

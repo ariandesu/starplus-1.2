@@ -73,57 +73,14 @@
   };
 
   function initViewers() {
-    if (!window.ThreeViewerManager || !window.THREE) return;
+    if (typeof window.disposeAllViewers === 'function') {
+      window.disposeAllViewers();
+    }
 
-    var view = S.view;
-
-    if (view === 'systems') {
-      var organModels = {
-        'mini-3d-cardiovascular': 'models/organs/VH_M_Heart.glb',
-        'mini-3d-respiratory': 'models/organs/VH_M_Lung.glb',
-        'mini-3d-neurological': 'models/organs/Allen_M_Brain.glb',
-        'mini-3d-musculoskeletal': 'models/organs/Skeleton.glb',
-        'mini-3d-immune': 'models/organs/Endocrine.glb',
-        'mini-3d-behavioral': 'models/organs/sleep_astronaut.glb'
-      };
-
-      Object.keys(organModels).forEach(function(elemId) {
-        if (document.getElementById(elemId)) {
-          window.ThreeViewerManager.create(elemId, organModels[elemId], {
-            autoRotate: true,
-            mini: true,
-            cameraPos: [0, 0, 2.8]
-          });
-        }
-      });
-    } else if (view === 'system-detail') {
-      var sysId = S.sys || 'cardiovascular';
-      var sysModelMap = {
-        'cardiovascular': 'models/organs/realistic_human_heart.glb',
-        'respiratory': 'models/organs/VH_M_Lung.glb',
-        'neurological': 'models/organs/Allen_M_Brain.glb',
-        'musculoskeletal': 'models/organs/realistic_human_skeleton.glb',
-        'immune': 'models/organs/Endocrine.glb',
-        'behavioral': 'models/organs/sleep_astronaut.glb',
-        'radiation': 'models/organs/realistic_human_skeleton.glb',
-        'environmental': 'models/organs/realistic_human_skeleton.glb'
-      };
-
-      var modelPath = sysModelMap[sysId] || sysModelMap['cardiovascular'];
-      if (document.getElementById('detail-3d-canvas')) {
-        window.ThreeViewerManager.create('detail-3d-canvas', modelPath, {
-          autoRotate: true,
-          cameraPos: [0, 0, 2.5]
-        });
-      }
-    } else if (view === 'crew-detail') {
-      var crewElem = document.getElementById('crew-3d-canvas');
-      if (crewElem) {
-        window.ThreeViewerManager.create('crew-3d-canvas', 'models/organs/realistic_human_skeleton.glb', {
-          autoRotate: true,
-          cameraPos: [0, 0, 3.5]
-        });
-      }
+    var organTarget = document.getElementById('organ-canvas') || document.getElementById('organ-viewer-box') || document.getElementById('detail-3d-canvas') || document.getElementById('crew-3d-canvas');
+    if (organTarget && typeof window.createViewer === 'function') {
+      var organType = (window.S && window.S.sys) ? window.S.sys : 'cardiovascular';
+      window.createViewer(organTarget, organType, true);
     }
   }
 

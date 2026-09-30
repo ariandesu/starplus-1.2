@@ -9,14 +9,14 @@
       initialSliders[sl.id] = sl.defaultVal || 50;
     });
   } else {
-    initialSliders = { energy: 75, stress: 30, sleep: 65, workload: 70 };
+    initialSliders = { energy: 85, stress: 25, sleep: 80, workload: 65, hydration: 90, appetite: 85 };
   }
 
   window.S = {
     role: null,            // null = Login screen, 'astronaut', 'staff', 'control'
     view: 'login',         // 'login', 'overview', 'systems', 'system-detail', 'vitals', 'assessment', 'wellness', 'radiation', 'activity', 'alerts', 'mission', 'profile', 'staff-overview', 'crew-detail', 'control-overview'
     sys: 'cardiovascular', // active organ system detail ID
-    crewId: 'carter',      // active crew member ID for medical officer view
+    crewId: 'carter',      // active crew member ID (carter, kim, silva, chen)
     subTab: 'overview',    // sub-tab in system detail ('overview', 'trends', 'insights', 'recommendations')
     range: '7D',           // '1D', '7D', '30D', 'Live'
     step: 0,               // assessment wizard step (0..3)
@@ -52,6 +52,26 @@
         }
       }
       this.notify();
+    },
+
+    // Crew Switching
+    switchCrew: function(id) {
+      this.crewId = id;
+      this.notify();
+      if (window.toast) {
+        var c = (window.CREW || []).find(function(item) { return item.id === id; });
+        var name = c ? c.name : id;
+        window.toast('Active telemetry switched to ' + name + ' (' + (c ? c.sid : '') + ')', 'info');
+      }
+    },
+
+    // Date Range Selection
+    setRange: function(r) {
+      this.range = r;
+      this.notify();
+      if (window.toast) {
+        window.toast('Telemetry timeframe updated to ' + r, 'info');
+      }
     },
 
     // Role-based Navigation
@@ -147,7 +167,9 @@
   window.logout = function() { window.S.logout(); };
   window.go = function(v) { window.S.set({ view: v }); };
   window.openSystem = function(id) { window.S.set({ view: 'system-detail', sys: id }); };
-  window.openCrew = function(id) { window.S.set({ view: 'crew-detail', crewId: id }); };
+  window.openCrew = function(id) { window.S.openCrew(id); };
+  window.switchCrew = function(id) { window.S.switchCrew(id); };
+  window.setRange = function(r) { window.S.setRange(r); };
   window.stepNext = function() { window.S.stepNext(); };
   window.stepBack = function() { window.S.stepBack(); };
   window.setMood = function(i) { window.S.set({ mood: i }); };
